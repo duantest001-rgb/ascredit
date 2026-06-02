@@ -14,6 +14,12 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
+    if (request.method === "GET") {
+      return new Response(JSON.stringify({ ok: true, message: "AI Worker is running. Use POST with { prompt }." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (request.method !== "POST") {
       return new Response(JSON.stringify({ error: "Method not allowed" }), {
         status: 405,
@@ -47,7 +53,7 @@ export default {
           "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify({
-          model: "claude-3-5-haiku-20241022",
+          model: "claude-haiku-4-5-20251001",
           max_tokens: 900,
           messages: [{ role: "user", content: prompt }],
         }),

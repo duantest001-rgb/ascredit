@@ -27,3 +27,10 @@ Static web app for credit lead pre-screening with Supabase Auth/Data and Cloudfl
 - `js/app.js` credit analysis and AI button
 - `js/config.js` Supabase + AI Worker URL
 - `worker-ai-analyze.js` Cloudflare Worker code
+
+
+## AI Analyze Fix Notes
+- `js/config.js` uses the real Worker URL: `https://ascredits.gogogo-thong.workers.dev`
+- `worker-ai-analyze.js` uses `claude-haiku-4-5-20251001`.
+- After replacing files in GitHub, redeploy Cloudflare Pages.
+- After replacing Worker code, redeploy Cloudflare Worker.
