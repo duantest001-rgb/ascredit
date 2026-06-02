@@ -3,88 +3,207 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LaoCreditAssist - App</title>
+  <title>ASCredit - App</title>
   <link rel="stylesheet" href="css/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
-  <header class="topbar">
-    <div>
-      <h1>LaoCreditAssist</h1>
-      <p>Rule ຕັດສິນ • Copy Prompt • ຄົນອະນຸມັດ</p>
+<body class="app-shell">
+  <aside class="sidebar">
+    <div class="brand-mini">
+      <div class="brand-icon">AC</div>
+      <div>
+        <h1>ASCredit</h1>
+        <p>Credit Pre-screen</p>
+      </div>
     </div>
-    <button id="logoutBtn" class="danger-btn">ອອກຈາກລະບົບ</button>
-  </header>
 
-  <main class="container">
-    <section class="stats-grid">
-      <div class="stat-card"><span>ລູກຄ້າທັງໝົດ</span><strong id="totalLeads">0</strong></div>
-      <div class="stat-card"><span>ຜ່ານການກວດເບື້ອງຕົ້ນ</span><strong id="passedLeads">0</strong></div>
-      <div class="stat-card"><span>ຄວາມສ່ຽງສູງ</span><strong id="highRiskLeads">0</strong></div>
-      <div class="stat-card"><span>ຄະແນນສະເລ່ຍ</span><strong id="avgScore">0</strong></div>
+    <nav class="side-nav" aria-label="Main menu">
+      <button class="nav-item active" data-view="dashboardView"><span>📊</span> Dashboard</button>
+      <button class="nav-item" data-view="caseView"><span>➕</span> ເພີ່ມ Case</button>
+      <button class="nav-item" data-view="leadsView"><span>👥</span> ລາຍການລູກຄ້າ</button>
+      <button class="nav-item" data-view="promptView"><span>📋</span> Copy Prompt</button>
+      <button class="nav-item" data-view="usersView"><span>🔐</span> ຜູ້ໃຊ້/ສິດ</button>
+    </nav>
+
+    <div class="sidebar-note">
+      <strong>ໂໝດປະຫຍັດ</strong>
+      <span>AI Analyze ຖືກປິດໄວ້. ໃຊ້ Copy Prompt ໄປ ChatGPT / Custom GPT.</span>
+    </div>
+  </aside>
+
+  <main class="workspace">
+    <header class="app-topbar">
+      <div>
+        <p class="eyebrow">Rule ຕັດສິນ • Copy Prompt • ຄົນອະນຸມັດ</p>
+        <h2 id="pageTitle">Dashboard</h2>
+      </div>
+      <div class="top-actions">
+        <button id="quickAddBtn" type="button" class="primary-btn">+ ເພີ່ມ Case</button>
+        <button id="logoutBtn" class="danger-btn">ອອກຈາກລະບົບ</button>
+      </div>
+    </header>
+
+    <section id="dashboardView" class="view active-view">
+      <div class="stats-grid">
+        <div class="stat-card accent-blue"><span>ລູກຄ້າທັງໝົດ</span><strong id="totalLeads">0</strong></div>
+        <div class="stat-card accent-green"><span>ຜ່ານການກວດເບື້ອງຕົ້ນ</span><strong id="passedLeads">0</strong></div>
+        <div class="stat-card accent-red"><span>ຄວາມສ່ຽງສູງ</span><strong id="highRiskLeads">0</strong></div>
+        <div class="stat-card accent-purple"><span>ຄະແນນສະເລ່ຍ</span><strong id="avgScore">0</strong></div>
+      </div>
+
+      <div class="dashboard-grid">
+        <section class="panel soft-panel">
+          <div class="section-head">
+            <div>
+              <h3>ຂັ້ນຕອນແນະນຳ</h3>
+              <p>ບັນທຶກ case → ຄິດໄລ່ → copy prompt → ວິເຄາະໃນ GPT</p>
+            </div>
+          </div>
+          <div class="workflow-list">
+            <div><b>1</b><span>ເພີ່ມ Case ແລະປ້ອນຂໍ້ມູນສຳຄັນ</span></div>
+            <div><b>2</b><span>ກົດວິເຄາະ ແລະ ບັນທຶກ</span></div>
+            <div><b>3</b><span>ຄັດລອກ Prompt ໄປ ChatGPT / Custom GPT</span></div>
+          </div>
+        </section>
+
+        <section class="panel soft-panel">
+          <h3>ສະຖານະລະບົບ</h3>
+          <div class="status-stack">
+            <div><span>Supabase</span><strong>ເຊື່ອມແລ້ວ</strong></div>
+            <div><span>AI API</span><strong>ປິດໄວ້</strong></div>
+            <div><span>Mode</span><strong>Copy Prompt</strong></div>
+          </div>
+        </section>
+      </div>
     </section>
 
-    <section class="layout">
-      <form id="leadForm" class="panel form-panel">
-        <h2>ບັນທຶກລູກຄ້າ + ວິເຄາະ</h2>
+    <section id="caseView" class="view">
+      <div class="case-layout">
+        <form id="leadForm" class="panel form-panel">
+          <div class="section-head compact-head">
+            <div>
+              <h3>ເພີ່ມ Case ລູກຄ້າ</h3>
+              <p>ແບ່ງຂໍ້ມູນເປັນກຸ່ມ ໃຊ້ງ່າຍ ແລະບໍ່ຕ້ອງເລື່ອນຍາວ.</p>
+            </div>
+          </div>
 
-        <div class="form-grid">
-          <div><label>ຊື່ລູກຄ້າ</label><input id="customerName" required placeholder="ນາງ/ທ້າວ..." /></div>
-          <div><label>ເບີໂທ</label><input id="phone" placeholder="020..." /></div>
-          <div><label>ອາຊີບ</label><select id="occupation"><option value="Salary Employee">ພະນັກງານເງິນເດືອນ</option><option value="Market Trader">ແມ່ຄ້າ/ພໍ່ຄ້າຕະຫຼາດ</option><option value="Shop Owner">ເຈົ້າຂອງຮ້ານ</option><option value="Farmer">ກະສິກອນ</option><option value="Driver">ຄົນຂັບລົດ</option><option value="Other">ອື່ນໆ</option></select></div>
-          <div><label>ຈຸດປະສົງກູ້</label><select id="loanPurpose"><option value="Working Capital">ທຶນໝຸນວຽນ</option><option value="Business Expansion">ຂະຫຍາຍທຸລະກິດ</option><option value="Home Repair">ສ້ອມແປງເຮືອນ</option><option value="Vehicle">ຊື້ພາຫະນະ</option><option value="Emergency">ສຸກເສີນ</option><option value="Debt Refinance">ປິດ/ລວມໜີ້ເກົ່າ</option><option value="Other">ອື່ນໆ</option></select></div>
-          <div><label>ລາຍຮັບ/ເດືອນ</label><input id="monthlyIncome" type="number" min="0" required /></div>
-          <div><label>ລາຍຈ່າຍ/ເດືອນ</label><input id="monthlyExpense" type="number" min="0" required /></div>
-          <div><label>ໜີ້ເກົ່າ/ເດືອນ</label><input id="existingDebtPayment" type="number" min="0" value="0" /></div>
-          <div><label>ວົງເງິນຂໍກູ້</label><input id="loanAmount" type="number" min="0" required /></div>
-          <div><label>ດອກເບ້ຍ/ປີ (%)</label><input id="annualRate" type="number" min="0" step="0.01" value="18" /></div>
-          <div><label>ໄລຍະເວລາ (ເດືອນ)</label><input id="termMonths" type="number" min="1" value="24" /></div>
-          <div><label>ຫຼັກຊັບ/ຜູ້ຄ້ຳ</label><select id="collateral"><option value="Yes">ມີ</option><option value="No">ບໍ່ມີ</option></select></div>
-          <div><label>ປະຫວັດກູ້ເກົ່າ</label><select id="creditHistory"><option value="Good">ດີ</option><option value="Unknown">ບໍ່ຮູ້/ບໍ່ມີຂໍ້ມູນ</option><option value="Late Payment">ເຄີຍຈ່າຍຊ້າ</option><option value="Bad">ບໍ່ດີ</option></select></div>
-          <div><label>ເອກະສານ</label><select id="documents"><option value="Complete">ຄົບ</option><option value="Partial">ຍັງບໍ່ຄົບ</option><option value="Missing">ຂາດຫຼາຍ</option></select></div>
-          <div><label>ສະຖານະ</label><select id="status"><option value="New Lead">ລູກຄ້າໃໝ່</option><option value="Contacted">ຕິດຕໍ່ແລ້ວ</option><option value="Interested">ສົນໃຈ</option><option value="Document Pending">ລໍຖ້າເອກະສານ</option><option value="Pre-screen Passed">ຜ່ານການກວດເບື້ອງຕົ້ນ</option><option value="Submitted">ສົ່ງພິຈາລະນາແລ້ວ</option><option value="Approved">ອະນຸມັດແລ້ວ</option><option value="Rejected">ບໍ່ອະນຸມັດ</option><option value="Follow-up Later">ຕິດຕາມພາຍຫຼັງ</option></select></div>
-        </div>
+          <div class="form-section">
+            <h4>1. ຂໍ້ມູນລູກຄ້າ</h4>
+            <div class="form-grid">
+              <div><label>ຊື່ລູກຄ້າ</label><input id="customerName" required placeholder="ນາງ/ທ້າວ..." /></div>
+              <div><label>ເບີໂທ</label><input id="phone" placeholder="020..." /></div>
+              <div><label>ອາຊີບ</label><select id="occupation"><option value="Salary Employee">ພະນັກງານເງິນເດືອນ</option><option value="Market Trader">ແມ່ຄ້າ/ພໍ່ຄ້າຕະຫຼາດ</option><option value="Shop Owner">ເຈົ້າຂອງຮ້ານ</option><option value="Farmer">ກະສິກອນ</option><option value="Driver">ຄົນຂັບລົດ</option><option value="Other">ອື່ນໆ</option></select></div>
+              <div><label>ສະຖານະ</label><select id="status"><option value="New Lead">ລູກຄ້າໃໝ່</option><option value="Contacted">ຕິດຕໍ່ແລ້ວ</option><option value="Interested">ສົນໃຈ</option><option value="Document Pending">ລໍຖ້າເອກະສານ</option><option value="Pre-screen Passed">ຜ່ານການກວດເບື້ອງຕົ້ນ</option><option value="Submitted">ສົ່ງພິຈາລະນາແລ້ວ</option><option value="Approved">ອະນຸມັດແລ້ວ</option><option value="Rejected">ບໍ່ອະນຸມັດ</option><option value="Follow-up Later">ຕິດຕາມພາຍຫຼັງ</option></select></div>
+            </div>
+          </div>
 
-        <label>ບັນທຶກເພີ່ມເຕີມ</label>
-        <textarea id="note" rows="3" placeholder="ບັນທຶກຂໍ້ມູນເພີ່ມ..."></textarea>
+          <div class="form-section">
+            <h4>2. ລາຍຮັບ ແລະ ພາລະໜີ້</h4>
+            <div class="form-grid">
+              <div><label>ລາຍຮັບ/ເດືອນ</label><input id="monthlyIncome" type="number" min="0" required /></div>
+              <div><label>ລາຍຈ່າຍ/ເດືອນ</label><input id="monthlyExpense" type="number" min="0" required /></div>
+              <div><label>ໜີ້ເກົ່າ/ເດືອນ</label><input id="existingDebtPayment" type="number" min="0" value="0" /></div>
+              <div><label>ປະຫວັດກູ້ເກົ່າ</label><select id="creditHistory"><option value="Good">ດີ</option><option value="Unknown">ບໍ່ຮູ້/ບໍ່ມີຂໍ້ມູນ</option><option value="Late Payment">ເຄີຍຈ່າຍຊ້າ</option><option value="Bad">ບໍ່ດີ</option></select></div>
+            </div>
+          </div>
 
-        <div class="actions">
-          <button type="submit" class="primary-btn">ວິເຄາະ ແລະ ບັນທຶກ</button>
-          <button type="button" id="resetBtn" class="secondary-btn">ລ້າງຟອມ</button>
-        </div>
-        <p id="saveMessage" class="message"></p>
-      </form>
+          <div class="form-section">
+            <h4>3. ຂໍ້ມູນການກູ້</h4>
+            <div class="form-grid">
+              <div><label>ຈຸດປະສົງກູ້</label><select id="loanPurpose"><option value="Working Capital">ທຶນໝຸນວຽນ</option><option value="Business Expansion">ຂະຫຍາຍທຸລະກິດ</option><option value="Home Repair">ສ້ອມແປງເຮືອນ</option><option value="Vehicle">ຊື້ພາຫະນະ</option><option value="Emergency">ສຸກເສີນ</option><option value="Debt Refinance">ປິດ/ລວມໜີ້ເກົ່າ</option><option value="Other">ອື່ນໆ</option></select></div>
+              <div><label>ວົງເງິນຂໍກູ້</label><input id="loanAmount" type="number" min="0" required /></div>
+              <div><label>ດອກເບ້ຍ/ປີ (%)</label><input id="annualRate" type="number" min="0" step="0.01" value="18" /></div>
+              <div><label>ໄລຍະເວລາ (ເດືອນ)</label><input id="termMonths" type="number" min="1" value="24" /></div>
+            </div>
+          </div>
 
-      <aside class="panel result-panel">
-        <h2>ຜົນວິເຄາະ</h2>
-        <div class="result-row"><span>ຄ່າງວດປະມານ</span><strong id="monthlyPayment">0</strong></div>
-        <div class="result-row"><span>ເງິນເຫຼືອກ່ອນຈ່າຍງວດ</span><strong id="cashAvailable">0</strong></div>
-        <div class="result-row"><span>ພາລະໜີ້ລວມ</span><strong id="debtRatio">0%</strong></div>
-        <div class="result-row"><span>ຄະແນນ</span><strong id="score">0/100</strong></div>
-        <div class="risk-box" id="riskBox">ລໍຖ້າປ້ອນຂໍ້ມູນ</div>
-        <h3>ຄຳແນະນຳ</h3>
-        <p id="recommendation">-</p>
-        <h3>Prompt ສຳລັບຄັດລອກໄປວິເຄາະ</h3>
-        <textarea id="aiPrompt" rows="10" readonly></textarea>
-        <div class="actions">
-          <button id="copyPromptBtn" type="button" class="secondary-btn">ຄັດລອກ Prompt</button>
-        </div>
-        <p id="aiMessage" class="message"></p>
-        <div class="ai-result">ປຸ່ມ AI Analyze ຖືກປິດໄວ້ກ່ອນ ເພື່ອປະຫຍັດ API token. ໃຫ້ຄັດລອກ Prompt ໄປວິເຄາະໃນ ChatGPT / Custom GPT.</div>
-      </aside>
+          <div class="form-section">
+            <h4>4. ເອກະສານ ແລະ ຫຼັກຊັບ</h4>
+            <div class="form-grid">
+              <div><label>ຫຼັກຊັບ/ຜູ້ຄ້ຳ</label><select id="collateral"><option value="Yes">ມີ</option><option value="No">ບໍ່ມີ</option></select></div>
+              <div><label>ເອກະສານ</label><select id="documents"><option value="Complete">ຄົບ</option><option value="Partial">ຍັງບໍ່ຄົບ</option><option value="Missing">ຂາດຫຼາຍ</option></select></div>
+            </div>
+            <label>ບັນທຶກເພີ່ມເຕີມ</label>
+            <textarea id="note" rows="2" placeholder="ບັນທຶກຂໍ້ມູນເພີ່ມ..."></textarea>
+          </div>
+
+          <div class="actions fixed-actions">
+            <button type="submit" class="primary-btn">ວິເຄາະ ແລະ ບັນທຶກ</button>
+            <button type="button" id="resetBtn" class="secondary-btn">ລ້າງຟອມ</button>
+            <button type="button" class="ghost-btn" data-view-target="promptView">ໄປ Copy Prompt</button>
+          </div>
+          <p id="saveMessage" class="message"></p>
+        </form>
+
+        <aside class="panel result-panel">
+          <div class="result-card-title">
+            <h3>ຜົນວິເຄາະດ່ວນ</h3>
+            <span>Rule-based</span>
+          </div>
+          <div class="result-row"><span>ຄ່າງວດ</span><strong id="monthlyPayment">0</strong></div>
+          <div class="result-row"><span>ເງິນເຫຼືອ</span><strong id="cashAvailable">0</strong></div>
+          <div class="result-row"><span>Debt Burden</span><strong id="debtRatio">0%</strong></div>
+          <div class="result-row"><span>ຄະແນນ</span><strong id="score">0/100</strong></div>
+          <div class="risk-box" id="riskBox">ລໍຖ້າປ້ອນຂໍ້ມູນ</div>
+          <h4>ຄຳແນະນຳ</h4>
+          <p id="recommendation">-</p>
+        </aside>
+      </div>
     </section>
 
-    <section class="panel">
-      <div class="section-head">
-        <h2>ຕິດຕາມລູກຄ້າ</h2>
-        <button id="refreshBtn" class="secondary-btn">ໂຫຼດໃໝ່</button>
+    <section id="leadsView" class="view">
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <h3>ລາຍການລູກຄ້າ</h3>
+            <p>ຄົ້ນຫາ ແລະກອງຕາມ Risk/Status ໄດ້.</p>
+          </div>
+          <button id="refreshBtn" class="secondary-btn">ໂຫຼດໃໝ່</button>
+        </div>
+        <div class="filters-bar">
+          <input id="searchInput" placeholder="ຄົ້ນຫາຊື່ ຫຼື ເບີໂທ..." />
+          <select id="riskFilter"><option value="">Risk ທັງໝົດ</option><option value="Low Risk">ຄວາມສ່ຽງຕ່ຳ</option><option value="Medium Risk">ຄວາມສ່ຽງປານກາງ</option><option value="High Risk">ຄວາມສ່ຽງສູງ</option><option value="Very High Risk">ຄວາມສ່ຽງສູງຫຼາຍ</option></select>
+          <select id="statusFilter"><option value="">ສະຖານະທັງໝົດ</option><option value="New Lead">ລູກຄ້າໃໝ່</option><option value="Contacted">ຕິດຕໍ່ແລ້ວ</option><option value="Interested">ສົນໃຈ</option><option value="Document Pending">ລໍຖ້າເອກະສານ</option><option value="Pre-screen Passed">ຜ່ານການກວດເບື້ອງຕົ້ນ</option><option value="Submitted">ສົ່ງພິຈາລະນາແລ້ວ</option><option value="Approved">ອະນຸມັດແລ້ວ</option><option value="Rejected">ບໍ່ອະນຸມັດ</option><option value="Follow-up Later">ຕິດຕາມພາຍຫຼັງ</option></select>
+        </div>
+        <div class="table-wrap compact-table">
+          <table>
+            <thead><tr><th>ວັນທີ</th><th>ຊື່</th><th>ໂທ</th><th>ອາຊີບ</th><th>ວົງເງິນ</th><th>ຄະແນນ</th><th>ຄວາມສ່ຽງ</th><th>ສະຖານະ</th></tr></thead>
+            <tbody id="leadTable"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <section id="promptView" class="view">
+      <div class="prompt-layout">
+        <section class="panel">
+          <h3>Copy Prompt ສຳລັບວິເຄາະ</h3>
+          <p class="muted">ກົດຄັດລອກ ແລ້ວນຳໄປວາງໃນ ChatGPT / Custom GPT. ບໍ່ເສຍ Claude API token.</p>
+          <textarea id="aiPrompt" rows="18" readonly></textarea>
+          <div class="actions">
+            <button id="copyPromptBtn" type="button" class="primary-btn">ຄັດລອກ Prompt</button>
+            <button type="button" class="secondary-btn" data-view-target="caseView">ກັບໄປເພີ່ມ Case</button>
+          </div>
+          <p id="aiMessage" class="message"></p>
+        </section>
+        <aside class="panel soft-panel">
+          <h3>ວິທີໃຊ້</h3>
+          <ol class="simple-list">
+            <li>ປ້ອນຂໍ້ມູນໃນໜ້າ “ເພີ່ມ Case”</li>
+            <li>ກົດ “ວິເຄາະ ແລະ ບັນທຶກ”</li>
+            <li>ກັບມາໜ້ານີ້ແລ້ວ Copy Prompt</li>
+          </ol>
+          <div class="token-note">AI Analyze ຖືກປິດໄວ້ກ່ອນ ເພື່ອປະຫຍັດ API token.</div>
+        </aside>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>ວັນທີ</th><th>ຊື່</th><th>ໂທ</th><th>ອາຊີບ</th><th>ວົງເງິນ</th><th>ຄະແນນ</th><th>ຄວາມສ່ຽງ</th><th>ສະຖານະ</th></tr></thead>
-          <tbody id="leadTable"></tbody>
-        </table>
-      </div>
+    </section>
+
+    <section id="usersView" class="view">
+      <section class="panel empty-state">
+        <div class="empty-icon">🔐</div>
+        <h3>ຜູ້ໃຊ້ ແລະ ສິດ</h3>
+        <p>ຮອງຮັບຕາຕະລາງ <b>app_users</b> ແລ້ວ. ຮອບຕໍ່ໄປຈະເພີ່ມໜ້າຈັດການ Role/Status ສຳລັບ Admin.</p>
+      </section>
     </section>
   </main>
 

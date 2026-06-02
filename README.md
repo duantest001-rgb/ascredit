@@ -1,29 +1,27 @@
-# LaoCreditAssist / ascredit
+# ASCredit Modern UI
 
-Static web app for credit lead pre-screening with Supabase Auth/Data.
+ຮຸ່ນນີ້ປັບ UI ໃຫ້ທັນສະໄໝ ໂທນສີສະບາຍຕາ ແລະແຍກເມນູໃຫ້ໃຊ້ງ່າຍຂຶ້ນ.
 
-## Current mode
-AI Analyze is disabled to save Claude API tokens.
-The app now works as:
+## ໂຄງສ້າງ
 
-- Input customer/loan data
-- Calculate monthly payment, debt burden, score, and risk level
-- Save lead to Supabase
-- Generate and copy a prompt/case summary
-- Paste the copied prompt into ChatGPT or your Custom GPT for long credit analysis
-
-## Files
-- `index.html` login/signup page
-- `app.html` main app
-- `css/styles.css` layout and Lao font
+- `index.html` ໜ້າ Login / Create Account
+- `app.html` ໜ້າ Web App ແບບ Sidebar Menu
+- `css/styles.css` Modern UI + Noto Sans Lao
 - `js/config.js` Supabase config
-- `js/auth.js` login/signup logic
-- `js/app.js` credit analysis, save lead, copy prompt
+- `js/auth.js` Login / Signup logic
+- `js/app.js` Scoring, Save Lead, Copy Prompt, Menu navigation
+
+## ສິ່ງທີ່ປັບ
+
+- Sidebar menu: Dashboard, ເພີ່ມ Case, ລາຍການລູກຄ້າ, Copy Prompt, ຜູ້ໃຊ້/ສິດ
+- Dashboard card ແບບ compact
+- Form ແຍກ 4 ສ່ວນ ບໍ່ລາກຍາວ
+- Table ມີ search/filter
+- AI Analyze ປິດໄວ້, ເຫຼືອ Copy Prompt ເພື່ອປະຫຍັດ token
 
 ## Deploy
-Upload/commit these files to GitHub and redeploy Cloudflare Pages.
-No Cloudflare Worker is required for the disabled-AI version.
 
-## Notes
-Keep Supabase anon key in `js/config.js` only.
-Do not put Claude API key in GitHub or frontend files.
+1. Upload ໄຟລ໌ທັງໝົດໃນ zip ນີ້ໄປ GitHub repo `ascredit`
+2. Commit changes
+3. Cloudflare Pages ຈະ redeploy ໃໝ່
+4. ເປີດ `https://ascredit.pages.dev`

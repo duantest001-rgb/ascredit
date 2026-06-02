@@ -55,6 +55,26 @@ const leadTable = $('leadTable');
 const saveMessage = $('saveMessage');
 let lastAnalysis = null;
 let lastInput = null;
+let allLeads = [];
+
+const PAGE_TITLES = {
+  dashboardView: 'Dashboard',
+  caseView: 'ເພີ່ມ Case',
+  leadsView: 'ລາຍການລູກຄ້າ',
+  promptView: 'Copy Prompt',
+  usersView: 'ຜູ້ໃຊ້ / ສິດ'
+};
+
+function showView(viewId) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active-view'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  const target = document.getElementById(viewId);
+  if (target) target.classList.add('active-view');
+  const nav = document.querySelector(`.nav-item[data-view="${viewId}"]`);
+  if (nav) nav.classList.add('active');
+  if ($('pageTitle')) $('pageTitle').textContent = PAGE_TITLES[viewId] || 'ASCredit';
+}
+
 
 function money(value) {
   return Number(value || 0).toLocaleString('en-US') + ' LAK';
@@ -232,6 +252,30 @@ async function saveLead(input, analysis) {
   if (error) throw error;
 }
 
+function renderLeadTable(rows = allLeads) {
+  const search = ($('searchInput')?.value || '').trim().toLowerCase();
+  const risk = $('riskFilter')?.value || '';
+  const status = $('statusFilter')?.value || '';
+
+  let filtered = rows.filter(row => {
+    const text = `${row.customer_name || ''} ${row.phone || ''}`.toLowerCase();
+    return (!search || text.includes(search)) && (!risk || row.risk_level === risk) && (!status || row.status === status);
+  });
+
+  leadTable.innerHTML = filtered.map(row => `
+    <tr>
+      <td>${new Date(row.created_at).toLocaleDateString()}</td>
+      <td><strong>${row.customer_name || ''}</strong></td>
+      <td>${row.phone || ''}</td>
+      <td>${lo('occupation', row.occupation)}</td>
+      <td>${money(row.loan_amount)}</td>
+      <td>${row.score || 0}</td>
+      <td>${lo('risk', row.risk_level)}</td>
+      <td>${lo('status', row.status)}</td>
+    </tr>
+  `).join('') || `<tr><td colspan="8" class="muted">ຍັງບໍ່ມີຂໍ້ມູນ ຫຼື ບໍ່ພົບຕາມການກອງ</td></tr>`;
+}
+
 async function loadLeads() {
   const { data, error } = await supabaseClient
     .from('credit_leads')
@@ -240,23 +284,13 @@ async function loadLeads() {
     .limit(100);
   if (error) throw error;
 
-  leadTable.innerHTML = data.map(row => `
-    <tr>
-      <td>${new Date(row.created_at).toLocaleDateString()}</td>
-      <td>${row.customer_name || ''}</td>
-      <td>${row.phone || ''}</td>
-      <td>${lo('occupation', row.occupation)}</td>
-      <td>${money(row.loan_amount)}</td>
-      <td>${row.score || 0}</td>
-      <td>${lo('risk', row.risk_level)}</td>
-      <td>${lo('status', row.status)}</td>
-    </tr>
-  `).join('');
+  allLeads = data || [];
+  renderLeadTable(allLeads);
 
-  $('totalLeads').textContent = data.length;
-  $('passedLeads').textContent = data.filter(x => x.risk_level === 'Low Risk' || x.status === 'Pre-screen Passed').length;
-  $('highRiskLeads').textContent = data.filter(x => x.risk_level === 'High Risk' || x.risk_level === 'Very High Risk').length;
-  const avg = data.length ? data.reduce((s, x) => s + Number(x.score || 0), 0) / data.length : 0;
+  $('totalLeads').textContent = allLeads.length;
+  $('passedLeads').textContent = allLeads.filter(x => x.risk_level === 'Low Risk' || x.status === 'Pre-screen Passed').length;
+  $('highRiskLeads').textContent = allLeads.filter(x => x.risk_level === 'High Risk' || x.risk_level === 'Very High Risk').length;
+  const avg = allLeads.length ? allLeads.reduce((sum, x) => sum + Number(x.score || 0), 0) / allLeads.length : 0;
   $('avgScore').textContent = avg.toFixed(0);
 }
 
@@ -310,6 +344,22 @@ $('copyPromptBtn').addEventListener('click', async () => {
 });
 
 $('refreshBtn').addEventListener('click', loadLeads);
+
+document.querySelectorAll('.nav-item[data-view]').forEach(btn => {
+  btn.addEventListener('click', () => showView(btn.dataset.view));
+});
+
+document.querySelectorAll('[data-view-target]').forEach(btn => {
+  btn.addEventListener('click', () => showView(btn.dataset.viewTarget));
+});
+
+$('quickAddBtn')?.addEventListener('click', () => showView('caseView'));
+$('searchInput')?.addEventListener('input', () => renderLeadTable());
+$('riskFilter')?.addEventListener('change', () => renderLeadTable());
+$('statusFilter')?.addEventListener('change', () => renderLeadTable());
+
+showView('dashboardView');
+
 $('logoutBtn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; });
 
 requireSession().then((session) => { if (session) loadLeads(); });
