@@ -22,19 +22,14 @@
       <button class="nav-item" data-view="caseView"><span>➕</span> ເພີ່ມ Case</button>
       <button class="nav-item" data-view="leadsView"><span>👥</span> ລາຍການລູກຄ້າ</button>
       <button class="nav-item" data-view="promptView"><span>📋</span> Copy Prompt</button>
-      <button class="nav-item" data-view="usersView"><span>🔐</span> ຜູ້ໃຊ້/ສິດ</button>
     </nav>
 
-    <div class="sidebar-note">
-      <strong>ໂໝດປະຫຍັດ</strong>
-      <span>AI Analyze ຖືກປິດໄວ້. ໃຊ້ Copy Prompt ໄປ ChatGPT / Custom GPT.</span>
-    </div>
   </aside>
 
   <main class="workspace">
     <header class="app-topbar">
       <div>
-        <p class="eyebrow">Rule ຕັດສິນ • Copy Prompt • ຄົນອະນຸມັດ</p>
+        <p class="eyebrow">ບັນທຶກ Case • ຄິດໄລ່ • ຄັດລອກ Prompt</p>
         <h2 id="pageTitle">Dashboard</h2>
       </div>
       <div class="top-actions">
@@ -67,11 +62,11 @@
         </section>
 
         <section class="panel soft-panel">
-          <h3>ສະຖານະລະບົບ</h3>
+          <h3>ການໃຊ້ງານດ່ວນ</h3>
           <div class="status-stack">
-            <div><span>Supabase</span><strong>ເຊື່ອມແລ້ວ</strong></div>
-            <div><span>AI API</span><strong>ປິດໄວ້</strong></div>
-            <div><span>Mode</span><strong>Copy Prompt</strong></div>
+            <div><span>ບັນທຶກ Case</span><strong>ພ້ອມໃຊ້</strong></div>
+            <div><span>ຄິດໄລ່ຄວາມສ່ຽງ</span><strong>ພ້ອມໃຊ້</strong></div>
+            <div><span>ຄັດລອກ Prompt</span><strong>ພ້ອມໃຊ້</strong></div>
           </div>
         </section>
       </div>
@@ -178,7 +173,7 @@
       <div class="prompt-layout">
         <section class="panel">
           <h3>Copy Prompt ສຳລັບວິເຄາະ</h3>
-          <p class="muted">ກົດຄັດລອກ ແລ້ວນຳໄປວາງໃນ ChatGPT / Custom GPT. ບໍ່ເສຍ Claude API token.</p>
+          <p class="muted">ກົດຄັດລອກ ແລ້ວນຳໄປວາງໃນ ChatGPT / Custom GPT.</p>
           <textarea id="aiPrompt" rows="18" readonly></textarea>
           <div class="actions">
             <button id="copyPromptBtn" type="button" class="primary-btn">ຄັດລອກ Prompt</button>
@@ -193,18 +188,11 @@
             <li>ກົດ “ວິເຄາະ ແລະ ບັນທຶກ”</li>
             <li>ກັບມາໜ້ານີ້ແລ້ວ Copy Prompt</li>
           </ol>
-          <div class="token-note">AI Analyze ຖືກປິດໄວ້ກ່ອນ ເພື່ອປະຫຍັດ API token.</div>
         </aside>
       </div>
     </section>
 
-    <section id="usersView" class="view">
-      <section class="panel empty-state">
-        <div class="empty-icon">🔐</div>
-        <h3>ຜູ້ໃຊ້ ແລະ ສິດ</h3>
-        <p>ຮອງຮັບຕາຕະລາງ <b>app_users</b> ແລ້ວ. ຮອບຕໍ່ໄປຈະເພີ່ມໜ້າຈັດການ Role/Status ສຳລັບ Admin.</p>
-      </section>
-    </section>
+</section>
   </main>
 
   <script src="js/config.js"></script>

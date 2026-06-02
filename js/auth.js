@@ -28,7 +28,7 @@ function friendlyAuthError(error) {
     return 'ອີເມວ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ';
   }
   if (msg.includes('email not confirmed') || msg.includes('confirm')) {
-    return 'ບັນຊີນີ້ຍັງບໍ່ໄດ້ຢືນຢັນ email. ກະລຸນາໄປກົດ link ໃນ email ກ່ອນ';
+    return 'ບັນຊີນີ້ຍັງບໍ່ໄດ້ຢືນຢັນ email. ກະລຸນາໄປກົດ link ຢືນຢັນໃນ email ກ່ອນ';
   }
   if (msg.includes('already registered') || msg.includes('user already')) {
     return 'ອີເມວນີ້ມີບັນຊີແລ້ວ. ກະລຸນາກົດເຂົ້າລະບົບ';
@@ -58,7 +58,7 @@ function validateInputs() {
 
 async function checkSession() {
   if (!supabaseClient) {
-    setMessage('ກະລຸນາໃສ່ Supabase URL ແລະ Anon Key ໃນ js/config.js', 'warning');
+    setMessage('ລະບົບຍັງບໍ່ພ້ອມໃຊ້ງານ ກະລຸນາຕິດຕໍ່ຜູ້ດູແລ', 'warning');
     return;
   }
   const { data } = await supabaseClient.auth.getSession();
@@ -66,7 +66,7 @@ async function checkSession() {
 }
 
 async function login() {
-  if (!supabaseClient) return setMessage('Supabase ຍັງບໍ່ຖືກ config', 'error');
+  if (!supabaseClient) return setMessage('ລະບົບຍັງບໍ່ພ້ອມໃຊ້ງານ ກະລຸນາຕິດຕໍ່ຜູ້ດູແລ', 'error');
 
   try {
     const { email, password } = validateInputs();
@@ -85,7 +85,7 @@ async function login() {
 }
 
 async function signup() {
-  if (!supabaseClient) return setMessage('Supabase ຍັງບໍ່ຖືກ config', 'error');
+  if (!supabaseClient) return setMessage('ລະບົບຍັງບໍ່ພ້ອມໃຊ້ງານ ກະລຸນາຕິດຕໍ່ຜູ້ດູແລ', 'error');
 
   try {
     const { email, password } = validateInputs();
@@ -95,7 +95,7 @@ async function signup() {
     const { error } = await supabaseClient.auth.signUp({ email, password });
     if (error) throw error;
 
-    setMessage('ສ້າງບັນຊີແລ້ວ. ຖ້າ Supabase ເປີດ email confirmation ໃຫ້ໄປຢືນຢັນ email ກ່ອນ.', 'success');
+    setMessage('ສ້າງບັນຊີແລ້ວ. ຖ້າມີ email ຢືນຢັນ ໃຫ້ໄປກົດຢືນຢັນກ່ອນເຂົ້າລະບົບ.', 'success');
   } catch (error) {
     setMessage(friendlyAuthError(error), 'error');
   } finally {

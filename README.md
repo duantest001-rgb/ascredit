@@ -25,3 +25,9 @@
 2. Commit changes
 3. Cloudflare Pages ຈະ redeploy ໃໝ່
 4. ເປີດ `https://ascredit.pages.dev`
+
+
+## UI cleanup
+- Removed admin/technical instructions from normal user screens.
+- Removed AI/API wording from user-facing cards.
+- Removed Users/Role placeholder menu from normal UI.
