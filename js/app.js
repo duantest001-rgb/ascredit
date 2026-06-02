@@ -4,6 +4,7 @@ const form = $('leadForm');
 const leadTable = $('leadTable');
 const saveMessage = $('saveMessage');
 let lastAnalysis = null;
+let lastInput = null;
 
 function money(value) {
   return Number(value || 0).toLocaleString('en-US') + ' LAK';
@@ -128,6 +129,39 @@ function renderAnalysis(input, analysis) {
   $('aiPrompt').value = buildAiPrompt(input, analysis);
 }
 
+function ensureCurrentAnalysis() {
+  const input = collectInput();
+  if (!input.customerName || !input.monthlyIncome || !input.loanAmount) {
+    throw new Error('ກະລຸນາປ້ອນຊື່, ລາຍຮັບ ແລະ ວົງເງິນຂໍກູ້ກ່ອນ');
+  }
+  const analysis = analyze(input);
+  lastInput = input;
+  lastAnalysis = analysis;
+  renderAnalysis(input, analysis);
+  return { input, analysis, prompt: buildAiPrompt(input, analysis) };
+}
+
+async function analyzeWithAI(promptText) {
+  if (typeof AI_WORKER_URL === 'undefined' || !AI_WORKER_URL || AI_WORKER_URL.includes('PASTE_')) {
+    throw new Error('ກະລຸນາໃສ່ AI_WORKER_URL ໃນ js/config.js');
+  }
+
+  const response = await fetch(AI_WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: promptText })
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const msg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error || data);
+    throw new Error(msg || 'AI analysis failed');
+  }
+
+  return data.result || data.text || '';
+}
+
 async function requireSession() {
   if (!supabaseClient) {
     alert('ກະລຸນາໃສ່ Supabase URL ແລະ Anon Key ໃນ js/config.js');
@@ -203,6 +237,7 @@ form.addEventListener('submit', async (e) => {
   const input = collectInput();
   if (!input.customerName) return saveMessage.textContent = 'ກະລຸນາໃສ່ຊື່ລູກຄ້າ';
   const analysis = analyze(input);
+  lastInput = input;
   lastAnalysis = analysis;
   renderAnalysis(input, analysis);
 
@@ -222,14 +257,52 @@ form.addEventListener('submit', async (e) => {
     const input = collectInput();
     if (input.monthlyIncome && input.loanAmount) {
       const analysis = analyze(input);
+      lastInput = input;
       lastAnalysis = analysis;
       renderAnalysis(input, analysis);
     }
   });
 });
 
-$('resetBtn').addEventListener('click', () => { form.reset(); $('annualRate').value = 18; $('termMonths').value = 24; });
+$('resetBtn').addEventListener('click', () => {
+  form.reset();
+  $('annualRate').value = 18;
+  $('termMonths').value = 24;
+  $('aiPrompt').value = '';
+  $('aiResult').textContent = 'ກົດ Analyze & Save ຫຼື ປ້ອນຂໍ້ມູນກ່ອນ, ແລ້ວກົດ AI Analyze.';
+  $('aiMessage').textContent = '';
+  lastInput = null;
+  lastAnalysis = null;
+});
 $('copyPromptBtn').addEventListener('click', async () => { await navigator.clipboard.writeText($('aiPrompt').value); });
+
+$('aiAnalyzeBtn').addEventListener('click', async () => {
+  const btn = $('aiAnalyzeBtn');
+  const msg = $('aiMessage');
+  const resultBox = $('aiResult');
+  msg.textContent = '';
+  msg.className = 'message';
+
+  try {
+    const { prompt } = ensureCurrentAnalysis();
+    btn.disabled = true;
+    btn.textContent = 'AI ກຳລັງວິເຄາະ...';
+    msg.textContent = 'ກຳລັງສົ່ງໄປ Claude ຜ່ານ Cloudflare Worker...';
+    resultBox.textContent = '';
+
+    const result = await analyzeWithAI(prompt);
+    resultBox.textContent = result || 'AI ບໍ່ສົ່ງຜົນກັບມາ';
+    msg.textContent = 'AI Analyze ສຳເລັດ';
+    msg.className = 'message success';
+  } catch (err) {
+    msg.textContent = err.message;
+    msg.className = 'message error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'AI Analyze';
+  }
+});
+
 $('refreshBtn').addEventListener('click', loadLeads);
 $('logoutBtn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; });
 

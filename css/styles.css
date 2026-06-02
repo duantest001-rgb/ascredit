@@ -151,3 +151,18 @@ th { background: #f8fafc; }
   .stats-grid, .layout, .form-grid { grid-template-columns: 1fr; }
   .topbar { flex-direction: column; align-items: flex-start; }
 }
+
+.ai-result {
+  min-height: 120px;
+  white-space: pre-wrap;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  line-height: 1.65;
+  color: var(--text);
+}
+button:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+}
