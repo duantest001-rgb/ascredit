@@ -191,27 +191,6 @@ function ensureCurrentAnalysis() {
   return { input, analysis, prompt: buildAiPrompt(input, analysis) };
 }
 
-async function analyzeWithAI(promptText) {
-  if (typeof AI_WORKER_URL === 'undefined' || !AI_WORKER_URL || AI_WORKER_URL.includes('PASTE_')) {
-    throw new Error('ກະລຸນາໃສ່ AI_WORKER_URL ໃນ js/config.js');
-  }
-
-  const response = await fetch(AI_WORKER_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt: promptText })
-  });
-
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    const msg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error || data);
-    throw new Error(msg || 'AI analysis failed');
-  }
-
-  return data.result || data.text || '';
-}
-
 async function requireSession() {
   if (!supabaseClient) {
     alert('ກະລຸນາໃສ່ Supabase URL ແລະ Anon Key ໃນ js/config.js');
@@ -319,38 +298,15 @@ $('resetBtn').addEventListener('click', () => {
   $('annualRate').value = 18;
   $('termMonths').value = 24;
   $('aiPrompt').value = '';
-  $('aiResult').textContent = 'ກົດ Analyze & Save ຫຼື ປ້ອນຂໍ້ມູນກ່ອນ, ແລ້ວກົດ AI Analyze.';
   $('aiMessage').textContent = '';
   lastInput = null;
   lastAnalysis = null;
 });
-$('copyPromptBtn').addEventListener('click', async () => { await navigator.clipboard.writeText($('aiPrompt').value); $('aiMessage').textContent = 'ຄັດລອກ AI Prompt ແລ້ວ'; $('aiMessage').className = 'message success'; });
-
-$('aiAnalyzeBtn').addEventListener('click', async () => {
-  const btn = $('aiAnalyzeBtn');
-  const msg = $('aiMessage');
-  const resultBox = $('aiResult');
-  msg.textContent = '';
-  msg.className = 'message';
-
-  try {
-    const { prompt } = ensureCurrentAnalysis();
-    btn.disabled = true;
-    btn.textContent = 'AI ກຳລັງວິເຄາະ...';
-    msg.textContent = 'ກຳລັງສົ່ງໄປ Claude ຜ່ານ Cloudflare Worker...';
-    resultBox.textContent = '';
-
-    const result = await analyzeWithAI(prompt);
-    resultBox.textContent = result || 'AI ບໍ່ສົ່ງຜົນກັບມາ';
-    msg.textContent = 'AI Analyze ສຳເລັດ';
-    msg.className = 'message success';
-  } catch (err) {
-    msg.textContent = err.message;
-    msg.className = 'message error';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'ໃຫ້ AI ວິເຄາະ';
-  }
+$('copyPromptBtn').addEventListener('click', async () => {
+  const prompt = $('aiPrompt').value || ensureCurrentAnalysis().prompt;
+  await navigator.clipboard.writeText(prompt);
+  $('aiMessage').textContent = 'ຄັດລອກ Prompt ແລ້ວ — ນຳໄປວາງໃນ ChatGPT / Custom GPT ໄດ້';
+  $('aiMessage').className = 'message success';
 });
 
 $('refreshBtn').addEventListener('click', loadLeads);
