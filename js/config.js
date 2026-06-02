@@ -4,7 +4,7 @@
 const SUPABASE_URL = 'https://ighczfhwawxbzticmijz.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnaGN6Zmh3YXd4Ynp0aWNtaWp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNDE0MDgsImV4cCI6MjA5NTkxNzQwOH0.EdlkjfEAvbRdGraVDD7i_HL7FjmXxmyCebMGi-6qJew';
 
-const AI_WORKER_URL = 'https://ascredits.gogogo-thong.workers.dev';
+const AI_WORKER_URL = 'https://morning-frost-5341.gogogo-thong.workers.dev';
 
 const isSupabaseConfigured =
   SUPABASE_URL.startsWith('https://') &&

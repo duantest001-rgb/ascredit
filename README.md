@@ -1,33 +1,29 @@
-# ascredit - CreditFlow Assistant
+# LaoCreditAssist / ASCredit
 
-Web app frontend for Lao credit lead pre-screening and AI analysis.
+Static web app for credit lead pre-screening with Supabase Auth/Data and Cloudflare Worker + Claude AI.
 
-## Files in this package
+## Latest changes
 
-- `index.html` - Login / signup page
-- `app.html` - Main app page
-- `css/styles.css` - UI styles
-- `js/config.js` - Supabase URL, anon key, and AI Worker URL
-- `js/auth.js` - Authentication logic
-- `js/app.js` - Lead analysis, scoring, save, dashboard, AI Analyze button
-- `worker-ai-analyze.js` - Cloudflare Worker code for Claude API proxy
+- Lao font fixed with Noto Sans Lao.
+- Status/dropdown display changed to Lao while keeping database values stable.
+- Login/Create Account messages improved in Lao.
+- Shows clear warning for wrong email/password.
+- Password show/hide toggle added.
+- Press Enter to login from the login screen.
 
-## Important
+## Deploy
 
-SQL is intentionally separated. Use the separate file:
+1. Upload files to GitHub repo root.
+2. Deploy via Cloudflare Pages.
+3. Keep `worker-ai-analyze.js` as reference code for Cloudflare Worker.
+4. Do not put Claude API key in GitHub. Store it as Worker secret `ANTHROPIC_API_KEY`.
 
-- `supabase_schema.sql`
+## Important files
 
-Only run it in Supabase if the table/policies are not already created.
-
-## Deploy steps
-
-1. Upload this package to your GitHub repo.
-2. Deploy the repo with Cloudflare Pages.
-3. For AI Analyze, create/update your Cloudflare Worker with `worker-ai-analyze.js`.
-4. Add Worker secret: `ANTHROPIC_API_KEY`.
-5. Make sure `js/config.js` has your correct `AI_WORKER_URL`.
-
-## Supabase
-
-The current app expects a table named `credit_leads` with RLS policies. If you already ran the SQL, do not run it again unless you need to reset/update the schema.
+- `index.html` login page
+- `app.html` main app
+- `css/styles.css` font and UI
+- `js/auth.js` login/signup logic
+- `js/app.js` credit analysis and AI button
+- `js/config.js` Supabase + AI Worker URL
+- `worker-ai-analyze.js` Cloudflare Worker code

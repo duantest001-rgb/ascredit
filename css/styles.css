@@ -177,3 +177,29 @@ button:disabled {
   opacity: .65;
   cursor: not-allowed;
 }
+
+.full-btn {
+  width: 100%;
+  margin-top: 12px;
+}
+.password-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.password-wrap input {
+  flex: 1;
+}
+.password-toggle {
+  width: auto;
+  white-space: nowrap;
+  background: #eef2ff;
+  color: #1d4ed8;
+  border: 1px solid #c7d2fe;
+  padding: 11px 12px;
+}
+.auth-help {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}

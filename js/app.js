@@ -1,5 +1,55 @@
 const $ = (id) => document.getElementById(id);
 
+
+const LO_LABELS = {
+  occupation: {
+    'Salary Employee': 'ພະນັກງານເງິນເດືອນ',
+    'Market Trader': 'ແມ່ຄ້າ/ພໍ່ຄ້າຕະຫຼາດ',
+    'Shop Owner': 'ເຈົ້າຂອງຮ້ານ',
+    'Farmer': 'ກະສິກອນ',
+    'Driver': 'ຄົນຂັບລົດ',
+    'Other': 'ອື່ນໆ'
+  },
+  purpose: {
+    'Working Capital': 'ທຶນໝຸນວຽນ',
+    'Business Expansion': 'ຂະຫຍາຍທຸລະກິດ',
+    'Home Repair': 'ສ້ອມແປງເຮືອນ',
+    'Vehicle': 'ຊື້ພາຫະນະ',
+    'Emergency': 'ສຸກເສີນ',
+    'Debt Refinance': 'ປິດ/ລວມໜີ້ເກົ່າ',
+    'Other': 'ອື່ນໆ'
+  },
+  collateral: { 'Yes': 'ມີ', 'No': 'ບໍ່ມີ' },
+  creditHistory: {
+    'Good': 'ດີ',
+    'Unknown': 'ບໍ່ຮູ້/ບໍ່ມີຂໍ້ມູນ',
+    'Late Payment': 'ເຄີຍຈ່າຍຊ້າ',
+    'Bad': 'ບໍ່ດີ'
+  },
+  documents: { 'Complete': 'ຄົບ', 'Partial': 'ຍັງບໍ່ຄົບ', 'Missing': 'ຂາດຫຼາຍ' },
+  status: {
+    'New Lead': 'ລູກຄ້າໃໝ່',
+    'Contacted': 'ຕິດຕໍ່ແລ້ວ',
+    'Interested': 'ສົນໃຈ',
+    'Document Pending': 'ລໍຖ້າເອກະສານ',
+    'Pre-screen Passed': 'ຜ່ານການກວດເບື້ອງຕົ້ນ',
+    'Submitted': 'ສົ່ງພິຈາລະນາແລ້ວ',
+    'Approved': 'ອະນຸມັດແລ້ວ',
+    'Rejected': 'ບໍ່ອະນຸມັດ',
+    'Follow-up Later': 'ຕິດຕາມພາຍຫຼັງ'
+  },
+  risk: {
+    'Low Risk': 'ຄວາມສ່ຽງຕ່ຳ',
+    'Medium Risk': 'ຄວາມສ່ຽງປານກາງ',
+    'High Risk': 'ຄວາມສ່ຽງສູງ',
+    'Very High Risk': 'ຄວາມສ່ຽງສູງຫຼາຍ'
+  }
+};
+
+function lo(group, value) {
+  return (LO_LABELS[group] && LO_LABELS[group][value]) || value || '';
+}
+
 const form = $('leadForm');
 const leadTable = $('leadTable');
 const saveMessage = $('saveMessage');
@@ -67,8 +117,8 @@ function buildAiPrompt(input, analysis) {
 
 ຂໍ້ມູນລູກຄ້າ:
 - ຊື່: ${input.customerName}
-- ອາຊີບ: ${input.occupation}
-- ຈຸດປະສົງກູ້: ${input.loanPurpose}
+- ອາຊີບ: ${lo('occupation', input.occupation)}
+- ຈຸດປະສົງກູ້: ${lo('purpose', input.loanPurpose)}
 - ລາຍຮັບ/ເດືອນ: ${money(input.monthlyIncome)}
 - ລາຍຈ່າຍ/ເດືອນ: ${money(input.monthlyExpense)}
 - ໜີ້ເກົ່າ/ເດືອນ: ${money(input.existingDebtPayment)}
@@ -76,10 +126,10 @@ function buildAiPrompt(input, analysis) {
 - ຄ່າງວດປະມານ: ${money(analysis.monthlyPayment)}
 - Debt Burden: ${(analysis.debtRatio * 100).toFixed(1)}%
 - Score: ${analysis.score}/100
-- Risk Level: ${analysis.riskLevel}
-- ເອກະສານ: ${input.documents}
-- ຫຼັກຊັບ/ຜູ້ຄ້ຳ: ${input.collateral}
-- ປະຫວັດກູ້ເກົ່າ: ${input.creditHistory}
+- ລະດັບຄວາມສ່ຽງ: ${lo('risk', analysis.riskLevel)}
+- ເອກະສານ: ${lo('documents', input.documents)}
+- ຫຼັກຊັບ/ຜູ້ຄ້ຳ: ${lo('collateral', input.collateral)}
+- ປະຫວັດກູ້ເກົ່າ: ${lo('creditHistory', input.creditHistory)}
 
 ຂໍໃຫ້ສະຫຼຸບ 5 ສ່ວນ:
 1) ພາບລວມ case
@@ -123,7 +173,7 @@ function renderAnalysis(input, analysis) {
   $('cashAvailable').textContent = money(analysis.cashAvailable.toFixed(0));
   $('debtRatio').textContent = `${(analysis.debtRatio * 100).toFixed(1)}%`;
   $('score').textContent = `${analysis.score}/100`;
-  $('riskBox').textContent = analysis.riskLevel;
+  $('riskBox').textContent = lo('risk', analysis.riskLevel);
   $('riskBox').className = `risk-box ${analysis.riskLevel.toLowerCase().replaceAll(' ', '-')}`;
   $('recommendation').textContent = analysis.recommendation + (analysis.notes.length ? ' ຈຸດລະວັງ: ' + analysis.notes.join(', ') : '');
   $('aiPrompt').value = buildAiPrompt(input, analysis);
@@ -216,11 +266,11 @@ async function loadLeads() {
       <td>${new Date(row.created_at).toLocaleDateString()}</td>
       <td>${row.customer_name || ''}</td>
       <td>${row.phone || ''}</td>
-      <td>${row.occupation || ''}</td>
+      <td>${lo('occupation', row.occupation)}</td>
       <td>${money(row.loan_amount)}</td>
       <td>${row.score || 0}</td>
-      <td>${row.risk_level || ''}</td>
-      <td>${row.status || ''}</td>
+      <td>${lo('risk', row.risk_level)}</td>
+      <td>${lo('status', row.status)}</td>
     </tr>
   `).join('');
 
@@ -274,7 +324,7 @@ $('resetBtn').addEventListener('click', () => {
   lastInput = null;
   lastAnalysis = null;
 });
-$('copyPromptBtn').addEventListener('click', async () => { await navigator.clipboard.writeText($('aiPrompt').value); });
+$('copyPromptBtn').addEventListener('click', async () => { await navigator.clipboard.writeText($('aiPrompt').value); $('aiMessage').textContent = 'ຄັດລອກ AI Prompt ແລ້ວ'; $('aiMessage').className = 'message success'; });
 
 $('aiAnalyzeBtn').addEventListener('click', async () => {
   const btn = $('aiAnalyzeBtn');
@@ -299,7 +349,7 @@ $('aiAnalyzeBtn').addEventListener('click', async () => {
     msg.className = 'message error';
   } finally {
     btn.disabled = false;
-    btn.textContent = 'AI Analyze';
+    btn.textContent = 'ໃຫ້ AI ວິເຄາະ';
   }
 });
 
