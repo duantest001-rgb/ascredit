@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="lo">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LaoCreditAssist - App</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>LaoCreditAssist</h1>
+      <p>Rule ຕັດສິນ • AI ອະທິບາຍ • ຄົນອະນຸມັດ</p>
+    </div>
+    <button id="logoutBtn" class="danger-btn">Logout</button>
+  </header>
+
+  <main class="container">
+    <section class="stats-grid">
+      <div class="stat-card"><span>Total Leads</span><strong id="totalLeads">0</strong></div>
+      <div class="stat-card"><span>Pre-screen Passed</span><strong id="passedLeads">0</strong></div>
+      <div class="stat-card"><span>High Risk</span><strong id="highRiskLeads">0</strong></div>
+      <div class="stat-card"><span>Average Score</span><strong id="avgScore">0</strong></div>
+    </section>
+
+    <section class="layout">
+      <form id="leadForm" class="panel form-panel">
+        <h2>ບັນທຶກລູກຄ້າ + ວິເຄາະ</h2>
+
+        <div class="form-grid">
+          <div><label>ຊື່ລູກຄ້າ</label><input id="customerName" required placeholder="ນາງ/ທ້າວ..." /></div>
+          <div><label>ເບີໂທ</label><input id="phone" placeholder="020..." /></div>
+          <div><label>ອາຊີບ</label><select id="occupation"><option>Salary Employee</option><option>Market Trader</option><option>Shop Owner</option><option>Farmer</option><option>Driver</option><option>Other</option></select></div>
+          <div><label>ຈຸດປະສົງກູ້</label><select id="loanPurpose"><option>Working Capital</option><option>Business Expansion</option><option>Home Repair</option><option>Vehicle</option><option>Emergency</option><option>Debt Refinance</option><option>Other</option></select></div>
+          <div><label>ລາຍຮັບ/ເດືອນ</label><input id="monthlyIncome" type="number" min="0" required /></div>
+          <div><label>ລາຍຈ່າຍ/ເດືອນ</label><input id="monthlyExpense" type="number" min="0" required /></div>
+          <div><label>ໜີ້ເກົ່າ/ເດືອນ</label><input id="existingDebtPayment" type="number" min="0" value="0" /></div>
+          <div><label>ວົງເງິນຂໍກູ້</label><input id="loanAmount" type="number" min="0" required /></div>
+          <div><label>ດອກເບ້ຍ/ປີ (%)</label><input id="annualRate" type="number" min="0" step="0.01" value="18" /></div>
+          <div><label>ໄລຍະເວລາ (ເດືອນ)</label><input id="termMonths" type="number" min="1" value="24" /></div>
+          <div><label>ຫຼັກຊັບ/ຜູ້ຄ້ຳ</label><select id="collateral"><option>Yes</option><option>No</option></select></div>
+          <div><label>ປະຫວັດກູ້ເກົ່າ</label><select id="creditHistory"><option>Good</option><option>Unknown</option><option>Late Payment</option><option>Bad</option></select></div>
+          <div><label>ເອກະສານ</label><select id="documents"><option>Complete</option><option>Partial</option><option>Missing</option></select></div>
+          <div><label>ສະຖານະ</label><select id="status"><option>New Lead</option><option>Contacted</option><option>Interested</option><option>Document Pending</option><option>Pre-screen Passed</option><option>Submitted</option><option>Approved</option><option>Rejected</option><option>Follow-up Later</option></select></div>
+        </div>
+
+        <label>Note</label>
+        <textarea id="note" rows="3" placeholder="ບັນທຶກຂໍ້ມູນເພີ່ມ..."></textarea>
+
+        <div class="actions">
+          <button type="submit" class="primary-btn">Analyze & Save</button>
+          <button type="button" id="resetBtn" class="secondary-btn">Reset</button>
+        </div>
+        <p id="saveMessage" class="message"></p>
+      </form>
+
+      <aside class="panel result-panel">
+        <h2>ຜົນວິເຄາະ</h2>
+        <div class="result-row"><span>ຄ່າງວດປະມານ</span><strong id="monthlyPayment">0</strong></div>
+        <div class="result-row"><span>ເງິນເຫຼືອກ່ອນຈ່າຍງວດ</span><strong id="cashAvailable">0</strong></div>
+        <div class="result-row"><span>Debt Burden</span><strong id="debtRatio">0%</strong></div>
+        <div class="result-row"><span>Score</span><strong id="score">0/100</strong></div>
+        <div class="risk-box" id="riskBox">ລໍຖ້າປ້ອນຂໍ້ມູນ</div>
+        <h3>Recommendation</h3>
+        <p id="recommendation">-</p>
+        <h3>AI Prompt</h3>
+        <textarea id="aiPrompt" rows="10" readonly></textarea>
+        <button id="copyPromptBtn" class="secondary-btn">Copy AI Prompt</button>
+      </aside>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>Pipeline</h2>
+        <button id="refreshBtn" class="secondary-btn">Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ວັນທີ</th><th>ຊື່</th><th>ໂທ</th><th>ອາຊີບ</th><th>ວົງເງິນ</th><th>Score</th><th>Risk</th><th>Status</th></tr></thead>
+          <tbody id="leadTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
