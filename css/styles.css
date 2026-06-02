@@ -88,6 +88,55 @@ label { display: block; margin: 7px 0 6px; font-weight: 800; font-size: 13px; co
 .message.error { color: var(--danger); }
 .message.success { color: var(--green); }
 
+
+/* Password field with inside eye icon */
+.password-field {
+  position: relative;
+  width: 100%;
+}
+.password-field input {
+  padding-right: 52px;
+}
+.password-eye {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: transparent;
+  color: #6a7f7b;
+  box-shadow: none;
+  border: 0;
+}
+.password-eye:hover {
+  transform: translateY(-50%);
+  background: #e7f2ef;
+  color: var(--primary-dark);
+}
+.password-eye:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(20,184,166,.16);
+}
+.eye-icon, .eye-icon svg {
+  width: 21px;
+  height: 21px;
+  display: block;
+}
+.eye-icon .eye-closed {
+  display: none;
+}
+.password-eye.is-visible .eye-open {
+  display: none;
+}
+.password-eye.is-visible .eye-closed {
+  display: block;
+}
+
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
 .stat-card { position: relative; overflow: hidden; background: #fff; border-radius: var(--radius); padding: 18px; border: 1px solid rgba(255,255,255,.8); box-shadow: var(--shadow); }
 .stat-card:after { content: ''; position: absolute; right: -20px; top: -20px; width: 90px; height: 90px; border-radius: 50%; opacity: .12; background: currentColor; }

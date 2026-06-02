@@ -113,8 +113,9 @@ signupBtn.addEventListener('click', signup);
 togglePassword.addEventListener('click', () => {
   const isHidden = passwordInput.type === 'password';
   passwordInput.type = isHidden ? 'text' : 'password';
-  togglePassword.textContent = isHidden ? 'ເຊື່ອງ' : 'ສະແດງ';
+  togglePassword.classList.toggle('is-visible', isHidden);
   togglePassword.setAttribute('aria-label', isHidden ? 'ເຊື່ອງລະຫັດ' : 'ສະແດງລະຫັດ');
+  togglePassword.setAttribute('title', isHidden ? 'ເຊື່ອງລະຫັດ' : 'ສະແດງລະຫັດ');
 });
 
 checkSession();
