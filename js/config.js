@@ -16,3 +16,7 @@ const isSupabaseConfigured =
 const supabaseClient = isSupabaseConfigured
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
+
+
+// Public Cloudflare Worker endpoint for PDF Summary Reader V3.1
+window.PDF_WORKER_URL = "https://ascredits.gogogo-thong.workers.dev/";

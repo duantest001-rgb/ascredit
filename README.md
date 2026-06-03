@@ -90,3 +90,21 @@ Optional Worker variables:
 
 ### Security
 Never place GEMINI_API_KEY in frontend files, GitHub, app.js, config.js, or HTML.
+
+
+## PDF Summary Reader V3.1
+
+Updated UX:
+- Removed Worker URL input from frontend.
+- The app now uses the public Worker endpoint from `js/config.js`.
+- Current configured endpoint:
+  `https://ascredits.gogogo-thong.workers.dev/`
+
+Security note:
+- This URL is public and safe to store in frontend.
+- `GEMINI_API_KEY` must stay only in Cloudflare Worker Secret.
+- Never put `GEMINI_API_KEY` in GitHub, `config.js`, `app.js`, or HTML.
+
+If the Worker URL changes, update:
+- `js/config.js`
+  `window.PDF_WORKER_URL = "...";`
