@@ -1,6 +1,6 @@
 (function () {
   const $ = (id) => document.getElementById(id);
-  const KEY = 'ascredit_pdf_worker_url';
+  const PDF_WORKER_URL = (window.APP_CONFIG && window.APP_CONFIG.PDF_WORKER_URL) || window.PDF_WORKER_URL || 'https://ascredits.gogogo-thong.workers.dev/';
   let currentResult = null;
   let validation = null;
 
@@ -65,14 +65,11 @@
   function buildPrompt(r, v) {
     return `ເຈົ້າແມ່ນ Credit Analysis Assistant. ກະລຸນາຂຽນບົດວິເຄາະ statement ເປັນພາສາລາວແບບມືອາຊີບ. ຫ້າມຕັດສິນອະນຸມັດ ຫຼື ປະຕິເສດແທນຄົນ.\n\nIMPORTANT:\n- AI PDF Summary Reader ສະຫຼຸບ key values ເທົ່ານັ້ນ.\n- Code ໄດ້ກວດ opening + deposits - withdrawals = closing.\n- User ໄດ້ confirm ຍອດຫຼັກແລ້ວ.\n\nStatement Info:\n${JSON.stringify(r.statement_info || {}, null, 2)}\n\nSummary Values:\n${JSON.stringify(r.summary_values || {}, null, 2)}\n\nSystem Validation:\n${JSON.stringify(v || {}, null, 2)}\n\nBehavior Summary:\n${JSON.stringify(r.behavior_summary || {}, null, 2)}\n\nRisk Flags:\n${(r.risk_flags || []).map(x=>'- '+x).join('\n') || '- ບໍ່ພົບ'}\n\nQuestions to Ask Customer:\n${(r.questions_to_ask_customer || []).map(x=>'- '+x).join('\n') || '- ກວດຢືນຢັນຍອດຫຼັກ'}\n\nຂໍໃຫ້ຂຽນ:\n1. ພາບລວມ statement\n2. ກະແສເງິນເຂົ້າ/ອອກ\n3. ຄວາມສະຖຽນຂອງລາຍຮັບ\n4. ພຶດຕິກຳການໃຊ້ບັນຊີ\n5. ຈຸດແຂງ\n6. ຈຸດສ່ຽງ\n7. ຄຳຖາມ/ເອກະສານຄວນຂໍເພີ່ມ\n8. ຂໍ້ຄວນກວດກ່ອນສົ່ງພິຈາລະນາ`;
   }
-
-  function saveUrl(){ const u=$('pdfWorkerUrl')?.value?.trim(); if(!u) return msg('workerUrlMessage','ກະລຸນາໃສ່ Worker URL','error'); localStorage.setItem(KEY,u); msg('workerUrlMessage','ບັນທຶກ Worker URL ແລ້ວ','success'); }
   async function readPdf(){
-    const file=$('pdfStatementFile')?.files?.[0], url=$('pdfWorkerUrl')?.value?.trim()||localStorage.getItem(KEY);
-    if(!url) return msg('pdfSummaryMessage','ກະລຸນາໃສ່ Worker URL ແລະ Save ກ່ອນ','error');
+    const file=$('pdfStatementFile')?.files?.[0], url=PDF_WORKER_URL;
     if(!file) return msg('pdfSummaryMessage','ກະລຸນາເລືອກ PDF','error');
     try{
-      localStorage.setItem(KEY,url); $('readPdfBtn').disabled=true; msg('pdfSummaryMessage','AI ກຳລັງອ່ານ PDF... 30–90 ວິນາທີ','warning');
+      $('readPdfBtn').disabled=true; msg('pdfSummaryMessage','AI ກຳລັງອ່ານ PDF... 30–90 ວິນາທີ','warning');
       const fd=new FormData(); fd.append('file',file); fd.append('mode','summary-only');
       const res=await fetch(url,{method:'POST',body:fd}); const data=await res.json();
       if(!res.ok||!data.ok) throw new Error(data.error||data.message||'Worker/Gemini error');
@@ -81,12 +78,9 @@
     finally{ if($('readPdfBtn')) $('readPdfBtn').disabled=false; }
   }
   function clearAll(){ currentResult=null; validation=null; if($('pdfStatementFile')) $('pdfStatementFile').value=''; ['pdfStatusPanel','pdfResultPanel','statementResultPanel'].forEach(id=>$(id)?.classList.add('hidden')); if($('statementPrompt')) $('statementPrompt').value=''; msg('pdfSummaryMessage',''); }
-
-  $('savePdfWorkerUrlBtn')?.addEventListener('click', saveUrl);
   $('readPdfBtn')?.addEventListener('click', readPdf);
   $('clearPdfSummaryBtn')?.addEventListener('click', clearAll);
   $('confirmKeyTotals')?.addEventListener('change', e=>{ if($('generateMemoPromptBtn')) $('generateMemoPromptBtn').disabled=!e.target.checked; });
   $('generateMemoPromptBtn')?.addEventListener('click',()=>{ if(!currentResult||!validation) return; $('statementPrompt').value=buildPrompt(currentResult,validation); $('statementResultPanel')?.classList.remove('hidden'); $('statementResultPanel')?.scrollIntoView({behavior:'smooth'}); });
   $('copyStatementPromptBtn')?.addEventListener('click',async()=>{ const t=$('statementPrompt')?.value||''; if(t) { await navigator.clipboard.writeText(t); msg('statementCopyMessage','ຄັດລອກ Prompt ແລ້ວ','success'); }});
-  const saved=localStorage.getItem(KEY); if(saved&&$('pdfWorkerUrl')) $('pdfWorkerUrl').value=saved;
 })();

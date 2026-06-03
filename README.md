@@ -108,3 +108,10 @@ Security note:
 If the Worker URL changes, update:
 - `js/config.js`
   `window.PDF_WORKER_URL = "...";`
+
+
+## V3.2 Clean UI
+- Removed Cloudflare Worker URL input from frontend.
+- Worker URL is configured in code/config.
+- User only uploads PDF and clicks AI Read PDF Summary.
+- GEMINI_API_KEY remains only in Cloudflare Worker Secret.

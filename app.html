@@ -178,20 +178,14 @@
           <div class="section-head"><div><h3>PDF Summary Reader V3</h3><p>Upload PDF statement → AI ອ່ານ → ສົ່ງ key values + risk flags → code ກວດຄິດຄືນ → user confirm.</p></div></div>
           <div class="notice-box"><strong>ຫຼັກການ:</strong><span>AI reads. Code verifies. User confirms. Human decides. ລະບົບບໍ່ອະນຸມັດແທນຄົນ.</span></div>
           <div class="form-section">
-            <h4>1. Cloudflare Worker URL</h4>
-            <p class="muted">ໃສ່ URL ຂອງ Worker ທີ່ deploy ຈາກ <code>worker-gemini-pdf-summary.js</code>. API key ຢູ່ໃນ Worker secret: <code>GEMINI_API_KEY</code>.</p>
-            <div class="endpoint-box"><input id="pdfWorkerUrl" type="url" placeholder="https://your-worker.yourname.workers.dev" /><button id="savePdfWorkerUrlBtn" type="button" class="secondary-btn">Save</button></div>
-            <p id="workerUrlMessage" class="message"></p>
-          </div>
-          <div class="form-section">
             <h4>1. Upload PDF Statement</h4>
-            <div class="upload-box"><input id="pdfStatementFile" type="file" accept=".pdf,application/pdf" /><p class="muted">AI ຈະ output ແຕ່ summary JSON ບໍ່ດຶງ transaction ທຸກແຖວ ເພື່ອປະຢັດ cost.</p></div>
+            <div class="upload-box"><input id="pdfStatementFile" type="file" accept=".pdf,application/pdf" /><p class="muted">ລະບົບຈະສົ່ງ PDF ໄປຫາ Cloudflare Worker ທີ່ຕັ້ງໄວ້ໃນ code. User ບໍ່ຕ້ອງກອກ URL ໃດໆ.</p></div>
             <div class="actions"><button id="readPdfBtn" type="button" class="primary-btn">AI Read PDF Summary</button><button id="clearPdfSummaryBtn" type="button" class="ghost-btn">Clear</button></div>
             <p id="pdfSummaryMessage" class="message"></p>
           </div>
           <div id="pdfStatusPanel" class="form-section hidden"><h4>2. AI Reading Status</h4><div id="pdfStatusCard" class="import-status-card"></div></div>
           <div id="pdfResultPanel" class="form-section hidden">
-            <h4>4. Key Values</h4>
+            <h4>3. Key Values</h4>
             <div class="pdf-grid"><div class="value-card"><span>Opening Balance</span><strong id="pdfOpeningBalance">-</strong></div><div class="value-card"><span>Total Deposits</span><strong id="pdfTotalDeposits">-</strong></div><div class="value-card"><span>Total Withdrawals</span><strong id="pdfTotalWithdrawals">-</strong></div><div class="value-card"><span>Closing Balance</span><strong id="pdfClosingBalance">-</strong></div></div>
             <div id="recalcCard" class="recalc-card"></div>
             <div class="result-grid"><div><h4>Statement Info</h4><div id="pdfStatementInfo" class="kv-list"></div></div><div><h4>Risk Flags</h4><ul id="pdfRiskFlags" class="flag-list"></ul></div><div><h4>Questions to Ask</h4><ul id="pdfQuestions" class="flag-list"></ul></div></div>
