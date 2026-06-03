@@ -61,6 +61,7 @@ const PAGE_TITLES = {
   dashboardView: 'Dashboard',
   caseView: 'ເພີ່ມ Case',
   leadsView: 'ລາຍການລູກຄ້າ',
+  statementView: 'Statement Analysis',
   promptView: 'Copy Prompt',
   usersView: 'ຜູ້ໃຊ້ / ສິດ'
 };

@@ -31,3 +31,18 @@
 - Removed admin/technical instructions from normal user screens.
 - Removed AI/API wording from user-facing cards.
 - Removed Users/Role placeholder menu from normal UI.
+
+
+## Statement Analysis V1
+Added:
+- Statement Analysis page
+- Upload Excel/CSV statement
+- Column mapping: Date, Description, Debit, Credit, Balance
+- Transaction summary engine
+- Behavior score and red flags
+- Copy Statement Prompt for GPT
+
+Note:
+- PDF direct extraction is not included in V1.
+- For PDF statement 40-50 pages, convert/export to Excel/CSV first.
+- PDF extractor can be added in V2 after the summary engine is stable.

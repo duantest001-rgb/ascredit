@@ -21,6 +21,7 @@
       <button class="nav-item active" data-view="dashboardView"><span>📊</span> Dashboard</button>
       <button class="nav-item" data-view="caseView"><span>➕</span> ເພີ່ມ Case</button>
       <button class="nav-item" data-view="leadsView"><span>👥</span> ລາຍການລູກຄ້າ</button>
+      <button class="nav-item" data-view="statementView"><span>📄</span> Statement Analysis</button>
       <button class="nav-item" data-view="promptView"><span>📋</span> Copy Prompt</button>
     </nav>
 
@@ -169,6 +170,104 @@
       </section>
     </section>
 
+
+    <section id="statementView" class="view">
+      <div class="statement-layout">
+        <section class="panel">
+          <div class="section-head">
+            <div>
+              <h3>Statement Analysis</h3>
+              <p>Upload Excel/CSV statement → map column → ລະບົບສະຫຼຸບ transaction ແລະກວດພຶດຕິກຳການເງິນ.</p>
+            </div>
+          </div>
+
+          <div class="notice-box">
+            <strong>V1 ແນະນຳ:</strong>
+            <span>ໃຊ້ Excel/CSV ກ່ອນ. PDF 40–50 ໜ້າຈະເຮັດເປັນ V2 ຫຼັງຈາກ engine ວິເຄາະ transaction ນິ່ງແລ້ວ.</span>
+          </div>
+
+          <div class="form-section">
+            <h4>1. Upload Statement File</h4>
+            <div class="upload-box">
+              <input id="statementFile" type="file" accept=".csv,.xlsx,.xls,.pdf" />
+              <p class="muted">ຮອງຮັບ Excel/CSV ໃນ V1. ຖ້າເປັນ PDF ໃຫ້ export/convert ເປັນ Excel/CSV ກ່ອນ.</p>
+            </div>
+            <p id="statementMessage" class="message"></p>
+          </div>
+
+          <div id="mappingPanel" class="form-section hidden">
+            <h4>2. Column Mapping</h4>
+            <p class="muted">ເລືອກ 5 ຄໍລຳຫຼັກທີ່ລະບົບຈະໃຊ້ຄິດໄລ່.</p>
+            <div class="form-grid">
+              <div><label>Date column</label><select id="mapDate"></select></div>
+              <div><label>Description column</label><select id="mapDescription"></select></div>
+              <div><label>Debit / Money Out</label><select id="mapDebit"></select></div>
+              <div><label>Credit / Money In</label><select id="mapCredit"></select></div>
+              <div><label>Balance</label><select id="mapBalance"></select></div>
+            </div>
+            <div class="actions">
+              <button id="analyzeStatementBtn" type="button" class="primary-btn">Analyze Statement</button>
+              <button id="clearStatementBtn" type="button" class="secondary-btn">Clear</button>
+            </div>
+          </div>
+
+          <div id="previewPanel" class="form-section hidden">
+            <h4>Preview Data</h4>
+            <div class="table-wrap statement-preview">
+              <table id="statementPreviewTable"></table>
+            </div>
+          </div>
+        </section>
+
+        <aside class="panel soft-panel">
+          <h3>ແນວຄິດການກວດ</h3>
+          <ol class="simple-list">
+            <li>Code ຄິດໄລ່ຕົວເລກ</li>
+            <li>Rule ກວດ Red Flags</li>
+            <li>GPT ອະທິບາຍ Credit Memo</li>
+          </ol>
+        </aside>
+      </div>
+
+      <section id="statementResultPanel" class="panel hidden">
+        <div class="section-head">
+          <div>
+            <h3>Statement Summary</h3>
+            <p>ຜົນສະຫຼຸບຈາກ transaction ທີ່ upload.</p>
+          </div>
+          <button id="copyStatementPromptBtn" type="button" class="primary-btn">Copy Statement Prompt</button>
+        </div>
+
+        <div class="stats-grid statement-stats">
+          <div class="stat-card accent-blue"><span>Total Credit</span><strong id="stTotalCredit">0</strong></div>
+          <div class="stat-card accent-red"><span>Total Debit</span><strong id="stTotalDebit">0</strong></div>
+          <div class="stat-card accent-green"><span>Avg Net Cash Flow</span><strong id="stNetCashFlow">0</strong></div>
+          <div class="stat-card accent-purple"><span>Behavior Score</span><strong id="stBehaviorScore">0</strong></div>
+        </div>
+
+        <div class="result-grid">
+          <div>
+            <h4>Key Metrics</h4>
+            <div id="statementMetrics" class="kv-list"></div>
+          </div>
+          <div>
+            <h4>Red Flags</h4>
+            <ul id="statementFlags" class="flag-list"></ul>
+          </div>
+          <div>
+            <h4>Questions to Ask</h4>
+            <ul id="statementQuestions" class="flag-list"></ul>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h4>Prompt ສຳລັບ GPT</h4>
+          <textarea id="statementPrompt" rows="12" readonly></textarea>
+          <p id="statementCopyMessage" class="message"></p>
+        </div>
+      </section>
+    </section>
+
     <section id="promptView" class="view">
       <div class="prompt-layout">
         <section class="panel">
@@ -195,7 +294,9 @@
 </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/statement-analysis.js"></script>
 </body>
 </html>
