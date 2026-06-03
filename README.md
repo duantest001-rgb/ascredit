@@ -115,3 +115,11 @@ If the Worker URL changes, update:
 - Worker URL is configured in code/config.
 - User only uploads PDF and clicks AI Read PDF Summary.
 - GEMINI_API_KEY remains only in Cloudflare Worker Secret.
+
+
+## V3.3 Fix
+- Worker default model changed to `gemini-2.5-flash`.
+- Worker now parses Gemini error responses safely, including non-JSON responses.
+- Frontend now shows clearer Worker/Gemini errors instead of raw JSON parser messages.
+- Keep `GEMINI_API_KEY` as Cloudflare Worker Secret.
+- Optional Worker variable: `GEMINI_MODEL=gemini-2.5-flash`.

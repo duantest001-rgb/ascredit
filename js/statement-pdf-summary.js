@@ -71,7 +71,11 @@
     try{
       $('readPdfBtn').disabled=true; msg('pdfSummaryMessage','AI ກຳລັງອ່ານ PDF... 30–90 ວິນາທີ','warning');
       const fd=new FormData(); fd.append('file',file); fd.append('mode','summary-only');
-      const res=await fetch(url,{method:'POST',body:fd}); const data=await res.json();
+      const res=await fetch(url,{method:'POST',body:fd});
+      const raw = await res.text();
+      let data;
+      try { data = JSON.parse(raw); }
+      catch (_) { throw new Error('Worker returned non-JSON response. Open Worker logs.'); }
       if(!res.ok||!data.ok) throw new Error(data.error||data.message||'Worker/Gemini error');
       render(data.result); msg('pdfSummaryMessage','AI ອ່ານ PDF ແລ້ວ. ກວດຍອດຫຼັກກ່ອນ Generate Prompt.','success');
     }catch(e){ msg('pdfSummaryMessage',e.message||'ອ່ານ PDF ບໍ່ສຳເລັດ','error'); }

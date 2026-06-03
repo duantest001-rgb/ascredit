@@ -18,7 +18,7 @@ export default {
       if (file.size && file.size > maxBytes) return json({ ok: false, error: `PDF too large. Max ${Math.round(maxBytes/1024/1024)} MB.` }, 400, corsHeaders);
 
       const pdfBase64 = arrayBufferToBase64(await file.arrayBuffer());
-      const model = env.GEMINI_MODEL || "gemini-3.5-flash";
+      const model = env.GEMINI_MODEL || "gemini-2.5-flash";
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY}`;
       const body = {
         contents: [{ parts: [
@@ -32,8 +32,15 @@ export default {
         }
       };
       const aiRes = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-      const aiData = await aiRes.json();
-      if (!aiRes.ok) return json({ ok: false, error: "Gemini API error", details: aiData }, aiRes.status, corsHeaders);
+      const aiRaw = await aiRes.text();
+      let aiData = null;
+      try { aiData = JSON.parse(aiRaw); } catch (e) {
+        return json({ ok: false, error: "Gemini returned non-JSON error response", raw: aiRaw.slice(0, 1000) }, 502, corsHeaders);
+      }
+      if (!aiRes.ok) {
+        const message = aiData?.error?.message || "Gemini API error";
+        return json({ ok: false, error: message, details: aiData, model }, aiRes.status, corsHeaders);
+      }
       const text = extractText(aiData);
       const parsed = safeParseJson(text);
       if (!parsed.ok) return json({ ok: false, error: "AI returned invalid JSON. Please retry or review manually.", raw: text }, 502, corsHeaders);
