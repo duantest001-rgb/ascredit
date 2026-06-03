@@ -63,3 +63,30 @@ Changed the UX from manual mapping to smart import:
 - Shows import type, transaction count, confidence score, and recommendation.
 - Main flow is Upload -> Auto Clean -> Analyze.
 - Manual header/column mapping remains available only under Advanced Mapping.
+
+## ASCREDIT PDF Summary Reader V3
+
+This version changes Statement Analysis into a PDF summary-only workflow.
+
+### User flow
+1. Upload PDF statement.
+2. Cloudflare Worker sends PDF to Gemini.
+3. Gemini returns strict JSON only: key statement values, risk flags, questions, confidence score.
+4. Web app recalculates: Opening Balance + Total Deposits - Total Withdrawals = Closing Balance.
+5. User confirms key totals.
+6. Web app generates Credit Memo Prompt.
+
+### Cloudflare Worker setup
+Deploy `worker-gemini-pdf-summary.js` as a Cloudflare Worker.
+
+Required Worker secret:
+- `GEMINI_API_KEY`
+
+Optional Worker variables:
+- `GEMINI_MODEL` default: `gemini-3.5-flash`
+- `MAX_OUTPUT_TOKENS` default: `6000`
+- `MAX_PDF_BYTES` default: 18 MB
+- `ALLOWED_ORIGIN` default: `*`
+
+### Security
+Never place GEMINI_API_KEY in frontend files, GitHub, app.js, config.js, or HTML.

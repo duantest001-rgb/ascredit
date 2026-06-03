@@ -175,120 +175,34 @@
 <section id="statementView" class="view">
       <div class="statement-layout">
         <section class="panel">
-          <div class="section-head">
-            <div>
-              <h3>Statement Smart Import V2</h3>
-              <p>Upload statement file ແລ້ວລະບົບຈະກວດ, clean, ແລະສະຫຼຸບ transaction ໃຫ້ອັດຕະໂນມັດ.</p>
-            </div>
-          </div>
-
-          <div class="notice-box">
-            <strong>ແນວທາງໃໝ່:</strong>
-            <span>ຜູ້ໃຊ້ຄວນເຮັດແຄ່ Upload → ກວດຜົນສະຫຼຸບ. Column Mapping ຈະຢູ່ໃນ Advanced ເທົ່ານັ້ນ.</span>
-          </div>
-
+          <div class="section-head"><div><h3>PDF Summary Reader V3</h3><p>Upload PDF statement → AI ອ່ານ → ສົ່ງ key values + risk flags → code ກວດຄິດຄືນ → user confirm.</p></div></div>
+          <div class="notice-box"><strong>ຫຼັກການ:</strong><span>AI reads. Code verifies. User confirms. Human decides. ລະບົບບໍ່ອະນຸມັດແທນຄົນ.</span></div>
           <div class="form-section">
-            <h4>1. Upload Statement File</h4>
-            <div class="upload-box">
-              <input id="statementFile" type="file" accept=".csv,.xlsx,.xls" />
-              <p class="muted">ຮອງຮັບ Excel/CSV. ຖ້າແປງຈາກ PDF ເປັນ Excel ແລ້ວລະບົບຈະພະຍາຍາມ clean ໃຫ້ກ່ອນ.</p>
-            </div>
-            <p id="statementMessage" class="message"></p>
+            <h4>1. Cloudflare Worker URL</h4>
+            <p class="muted">ໃສ່ URL ຂອງ Worker ທີ່ deploy ຈາກ <code>worker-gemini-pdf-summary.js</code>. API key ຢູ່ໃນ Worker secret: <code>GEMINI_API_KEY</code>.</p>
+            <div class="endpoint-box"><input id="pdfWorkerUrl" type="url" placeholder="https://your-worker.yourname.workers.dev" /><button id="savePdfWorkerUrlBtn" type="button" class="secondary-btn">Save</button></div>
+            <p id="workerUrlMessage" class="message"></p>
           </div>
-
-          <div id="importStatusPanel" class="form-section hidden">
-            <h4>2. Import Check</h4>
-            <div id="importStatusCard" class="import-status-card"></div>
-            <div class="actions">
-              <button id="analyzeStatementBtn" type="button" class="primary-btn">Analyze Statement</button>
-              <button id="reviewDataBtn" type="button" class="secondary-btn">Review Data</button>
-              <button id="toggleAdvancedBtn" type="button" class="secondary-btn">Advanced Mapping</button>
-              <button id="clearStatementBtn" type="button" class="ghost-btn">Clear</button>
-            </div>
+          <div class="form-section">
+            <h4>2. Upload PDF Statement</h4>
+            <div class="upload-box"><input id="pdfStatementFile" type="file" accept=".pdf,application/pdf" /><p class="muted">AI ຈະ output ແຕ່ summary JSON ບໍ່ດຶງ transaction ທຸກແຖວ ເພື່ອປະຢັດ cost.</p></div>
+            <div class="actions"><button id="readPdfBtn" type="button" class="primary-btn">AI Read PDF Summary</button><button id="clearPdfSummaryBtn" type="button" class="ghost-btn">Clear</button></div>
+            <p id="pdfSummaryMessage" class="message"></p>
           </div>
-
-          <div id="advancedPanel" class="form-section hidden">
-            <h4>Advanced Mapping</h4>
-            <p class="muted">ໃຊ້ສະເພາະກໍລະນີ auto clean ຜິດ. ຖ້າລະບົບອ່ານໄດ້ດີ ບໍ່ຕ້ອງແຕະສ່ວນນີ້.</p>
-
-            <div class="header-row-box">
-              <label>Header row</label>
-              <select id="headerRowSelect"></select>
-              <button id="applyHeaderRowBtn" type="button" class="secondary-btn">Apply Header Row</button>
-            </div>
-            <p id="headerHelpText" class="muted small-note"></p>
-
-            <div class="form-grid">
-              <div><label>Date column</label><select id="mapDate"></select></div>
-              <div><label>Description column</label><select id="mapDescription"></select></div>
-              <div><label>Debit / Money Out</label><select id="mapDebit"></select></div>
-              <div><label>Credit / Money In</label><select id="mapCredit"></select></div>
-              <div><label>Balance</label><select id="mapBalance"></select></div>
-            </div>
-            <div class="actions">
-              <button id="applyManualMappingBtn" type="button" class="primary-btn">Apply Manual Mapping</button>
-            </div>
-          </div>
-
-          <div id="previewPanel" class="form-section hidden">
-            <h4>Cleaned Transactions Preview</h4>
-            <p class="muted">ຕົວຢ່າງ transaction ທີ່ລະບົບ clean ໄດ້. ຖ້າ confidence ຕ່ຳ ຄວນກວດກ່ອນ analyze.</p>
-            <div class="table-wrap statement-preview">
-              <table id="statementPreviewTable"></table>
-            </div>
+          <div id="pdfStatusPanel" class="form-section hidden"><h4>3. AI Reading Status</h4><div id="pdfStatusCard" class="import-status-card"></div></div>
+          <div id="pdfResultPanel" class="form-section hidden">
+            <h4>4. Key Values</h4>
+            <div class="pdf-grid"><div class="value-card"><span>Opening Balance</span><strong id="pdfOpeningBalance">-</strong></div><div class="value-card"><span>Total Deposits</span><strong id="pdfTotalDeposits">-</strong></div><div class="value-card"><span>Total Withdrawals</span><strong id="pdfTotalWithdrawals">-</strong></div><div class="value-card"><span>Closing Balance</span><strong id="pdfClosingBalance">-</strong></div></div>
+            <div id="recalcCard" class="recalc-card"></div>
+            <div class="result-grid"><div><h4>Statement Info</h4><div id="pdfStatementInfo" class="kv-list"></div></div><div><h4>Risk Flags</h4><ul id="pdfRiskFlags" class="flag-list"></ul></div><div><h4>Questions to Ask</h4><ul id="pdfQuestions" class="flag-list"></ul></div></div>
+            <div class="form-section"><h4>Behavior Summary</h4><div id="pdfBehaviorSummary" class="behavior-box"></div></div>
+            <div class="confirm-box"><label><input id="confirmKeyTotals" type="checkbox" /> ຂ້ອຍກວດ Opening Balance, Total Deposits, Total Withdrawals, Closing Balance ກັບ statement ແລ້ວ</label><button id="generateMemoPromptBtn" type="button" class="primary-btn" disabled>Generate Credit Memo Prompt</button></div>
           </div>
         </section>
-
-        <aside class="panel soft-panel">
-          <h3>Smart Import Logic</h3>
-          <ol class="simple-list">
-            <li>ກວດວ່າ file ເປັນ clean table ຫຼື PDF-converted Excel</li>
-            <li>ຖ້າ clean table → analyze ໄດ້ເລີຍ</li>
-            <li>ຖ້າ PDF-converted → auto cleaner ດຶງ transaction</li>
-            <li>ຖ້າ confidence ຕ່ຳ → ໃຫ້ review ກ່ອນ</li>
-          </ol>
-        </aside>
+        <aside class="panel soft-panel"><h3>V3 Control Rules</h3><ol class="simple-list"><li>AI ບໍ່ດຶງ transaction ທຸກແຖວ</li><li>AI ຕ້ອງຕອບ JSON ຕາມ schema</li><li>Code ຄິດຄືນ opening + deposits - withdrawals = closing</li><li>User confirm ກ່ອນສ້າງ memo</li><li>ຖ້າ confidence ຕ່ຳ → Manual Review</li></ol></aside>
       </div>
-
-      <section id="statementResultPanel" class="panel hidden">
-        <div class="section-head">
-          <div>
-            <h3>Statement Summary</h3>
-            <p>ຜົນສະຫຼຸບຈາກ transaction ທີ່ລະບົບ clean/analyze.</p>
-          </div>
-          <button id="copyStatementPromptBtn" type="button" class="primary-btn">Copy Statement Prompt</button>
-        </div>
-
-        <div class="stats-grid statement-stats">
-          <div class="stat-card accent-blue"><span>Total Credit</span><strong id="stTotalCredit">0</strong></div>
-          <div class="stat-card accent-red"><span>Total Debit</span><strong id="stTotalDebit">0</strong></div>
-          <div class="stat-card accent-green"><span>Avg Net Cash Flow</span><strong id="stNetCashFlow">0</strong></div>
-          <div class="stat-card accent-purple"><span>Behavior Score</span><strong id="stBehaviorScore">0</strong></div>
-        </div>
-
-        <div class="result-grid">
-          <div>
-            <h4>Key Metrics</h4>
-            <div id="statementMetrics" class="kv-list"></div>
-          </div>
-          <div>
-            <h4>Red Flags</h4>
-            <ul id="statementFlags" class="flag-list"></ul>
-          </div>
-          <div>
-            <h4>Questions to Ask</h4>
-            <ul id="statementQuestions" class="flag-list"></ul>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <h4>Prompt ສຳລັບ GPT</h4>
-          <textarea id="statementPrompt" rows="12" readonly></textarea>
-          <p id="statementCopyMessage" class="message"></p>
-        </div>
-      </section>
+      <section id="statementResultPanel" class="panel hidden"><div class="section-head"><div><h3>Credit Memo Prompt</h3><p>Prompt ຈາກ key values ທີ່ກວດແລະ confirm ແລ້ວ.</p></div><button id="copyStatementPromptBtn" type="button" class="primary-btn">Copy Prompt</button></div><div class="form-section"><textarea id="statementPrompt" rows="18" readonly></textarea><p id="statementCopyMessage" class="message"></p></div></section>
     </section>
-
     <section id="promptView" class="view">
       <div class="prompt-layout">
         <section class="panel">
@@ -318,6 +232,6 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/app.js"></script>
-  <script src="js/statement-analysis.js"></script>
+  <script src="js/statement-pdf-summary.js"></script>
 </body>
 </html>
