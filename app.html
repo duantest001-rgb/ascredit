@@ -189,15 +189,21 @@
           <div class="form-section">
             <h4>1. Upload Statement File</h4>
             <div class="upload-box">
-              <input id="statementFile" type="file" accept=".csv,.xlsx,.xls,.pdf" />
-              <p class="muted">ຮອງຮັບ Excel/CSV ໃນ V1. ຖ້າເປັນ PDF ໃຫ້ export/convert ເປັນ Excel/CSV ກ່ອນ.</p>
+              <input id="statementFile" type="file" accept=".csv,.xlsx,.xls" />
+              <p class="muted">ຮອງຮັບ Excel/CSV ໃນ V1. ຖ້າແປງຈາກ PDF ແລ້ວມີຂໍ້ມູນຫົວເອກະສານຢູ່ດ້ານເທິງ ໃຫ້ເລືອກ Header Row ທີ່ເປັນຕາຕະລາງ transaction.</p>
             </div>
             <p id="statementMessage" class="message"></p>
           </div>
 
           <div id="mappingPanel" class="form-section hidden">
-            <h4>2. Column Mapping</h4>
-            <p class="muted">ເລືອກ 5 ຄໍລຳຫຼັກທີ່ລະບົບຈະໃຊ້ຄິດໄລ່.</p>
+            <h4>2. Header Row + Column Mapping</h4>
+            <p class="muted">ຖ້າ file ມີຫົວເອກະສານຢູ່ດ້ານເທິງ ໃຫ້ເລືອກແຖວທີ່ເປັນ header ຂອງ transaction ກ່ອນ.</p>
+            <div class="header-row-box">
+              <label>Header row</label>
+              <select id="headerRowSelect"></select>
+              <button id="applyHeaderRowBtn" type="button" class="secondary-btn">Apply Header Row</button>
+            </div>
+            <p id="headerHelpText" class="muted small-note"></p>
             <div class="form-grid">
               <div><label>Date column</label><select id="mapDate"></select></div>
               <div><label>Description column</label><select id="mapDescription"></select></div>

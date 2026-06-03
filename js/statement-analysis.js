@@ -2,6 +2,7 @@
   const $ = (id) => document.getElementById(id);
 
   let rawRows = [];
+  let sourceRows = [];
   let headers = [];
   let lastSummary = null;
 
@@ -17,6 +18,10 @@
     return Number(value || 0).toLocaleString('en-US') + ' LAK';
   }
 
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  }
+
   function setMessage(text, type = '') {
     const el = $('statementMessage');
     if (!el) return;
@@ -24,22 +29,62 @@
     el.className = 'message ' + type;
   }
 
+  function rowLabel(row, index) {
+    const preview = (row || []).map(x => String(x ?? '').trim()).filter(Boolean).slice(0, 5).join(' | ');
+    return `Row ${index + 1}: ${preview || '(blank)'}`;
+  }
+
+  function scoreHeaderRow(row) {
+    const text = (row || []).join(' ').toLowerCase();
+    let score = 0;
+    ['date', 'ວັນ', 'transaction', 'txn', 'posting'].forEach(k => { if (text.includes(k)) score += 2; });
+    ['description', 'detail', 'narration', 'remark', 'ລາຍ', 'ໝາຍ'].forEach(k => { if (text.includes(k)) score += 2; });
+    ['debit', 'withdraw', 'money out', 'dr', 'ອອກ', 'ຖອນ'].forEach(k => { if (text.includes(k)) score += 2; });
+    ['credit', 'deposit', 'money in', 'cr', 'ເຂົ້າ', 'ຝາກ'].forEach(k => { if (text.includes(k)) score += 2; });
+    ['balance', 'bal', 'ຄົງເຫຼືອ', 'ຍອດ'].forEach(k => { if (text.includes(k)) score += 2; });
+    return score;
+  }
+
+  function detectHeaderRow(rows) {
+    let best = 0, bestScore = -1;
+    rows.slice(0, 100).forEach((row, idx) => {
+      const score = scoreHeaderRow(row);
+      if (score > bestScore) { bestScore = score; best = idx; }
+    });
+    return bestScore >= 4 ? best : 0;
+  }
+
+  function updateHeaderHelp(index) {
+    const el = $('headerHelpText');
+    if (!el) return;
+    const row = sourceRows[Number(index)] || [];
+    el.textContent = 'ແຖວທີ່ເລືອກ: ' + row.map(x => String(x ?? '').trim()).filter(Boolean).slice(0, 8).join(' | ');
+  }
+
+  function fillHeaderRowSelect(rows, selectedIndex = 0) {
+    const select = $('headerRowSelect');
+    if (!select) return;
+    select.innerHTML = rows.slice(0, 100).map((row, idx) => `<option value="${idx}">${escapeHtml(rowLabel(row, idx))}</option>`).join('');
+    select.value = String(selectedIndex);
+    updateHeaderHelp(selectedIndex);
+  }
+
   function parseAmount(value) {
     if (value === null || value === undefined || value === '') return 0;
-    if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+    if (typeof value === 'number') return Number.isFinite(value) ? Math.abs(value) : 0;
     let text = String(value).trim();
     if (!text || text === '-' || text === '—') return 0;
     const isNegative = /^\(.*\)$/.test(text) || text.startsWith('-');
     text = text.replace(/[(),\s]/g, '').replace(/[^\d.-]/g, '');
     const num = Number(text);
     if (!Number.isFinite(num)) return 0;
-    return isNegative ? -Math.abs(num) : Math.abs(num);
+    return isNegative ? Math.abs(num) : Math.abs(num);
   }
 
   function normalizeDate(value) {
     if (!value) return '';
     if (value instanceof Date && !isNaN(value)) return value.toISOString().slice(0, 10);
-    if (typeof value === 'number') {
+    if (typeof value === 'number' && typeof XLSX !== 'undefined') {
       try {
         const d = XLSX.SSF.parse_date_code(value);
         if (d) return `${d.y}-${String(d.m).padStart(2, '0')}-${String(d.d).padStart(2, '0')}`;
@@ -84,14 +129,36 @@
     return rows;
   }
 
+  function makeUniqueHeaders(row) {
+    const seen = {};
+    return row.map((h, i) => {
+      let base = String(h || `Column ${i + 1}`).trim() || `Column ${i + 1}`;
+      if (seen[base] !== undefined) {
+        seen[base] += 1;
+        base = `${base} (${seen[base]})`;
+      } else {
+        seen[base] = 0;
+      }
+      return base;
+    });
+  }
+
   function rowsToObjects(rows) {
     if (!rows.length) return [];
-    headers = rows[0].map((h, i) => String(h || `Column ${i + 1}`).trim() || `Column ${i + 1}`);
+    headers = makeUniqueHeaders(rows[0]);
     return rows.slice(1).map(r => {
       const obj = {};
       headers.forEach((h, i) => obj[h] = r[i] ?? '');
       return obj;
     }).filter(obj => Object.values(obj).some(v => String(v).trim() !== ''));
+  }
+
+  function applyHeaderRow(index) {
+    const rows = sourceRows.slice(Number(index));
+    rawRows = rowsToObjects(rows);
+    if (!rawRows.length || !headers.length) throw new Error('Header row ທີ່ເລືອກບໍ່ຖືກ ຫຼືບໍ່ມີ transaction ຕໍ່ຈາກນັ້ນ');
+    setupMapping();
+    renderPreview();
   }
 
   function guessHeader(patterns) {
@@ -111,7 +178,7 @@
   }
 
   function setupMapping() {
-    fillSelect('mapDate', guessHeader(['date', 'ວັນ', 'txn']));
+    fillSelect('mapDate', guessHeader(['date', 'ວັນ', 'txn', 'posting']));
     fillSelect('mapDescription', guessHeader(['description', 'detail', 'narration', 'remark', 'ລາຍ', 'ໝາຍ']));
     fillSelect('mapDebit', guessHeader(['debit', 'withdraw', 'money out', 'outflow', 'dr', 'ອອກ', 'ຖອນ']));
     fillSelect('mapCredit', guessHeader(['credit', 'deposit', 'money in', 'inflow', 'cr', 'ເຂົ້າ', 'ຝາກ']));
@@ -128,10 +195,6 @@
     `;
   }
 
-  function escapeHtml(value) {
-    return String(value ?? '').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-  }
-
   function categorize(desc, debit, credit) {
     const text = String(desc || '').toLowerCase();
     if (keywordRules.cash.some(k => text.includes(k))) return 'Cash Withdrawal';
@@ -140,6 +203,15 @@
     if (keywordRules.bill.some(k => text.includes(k))) return 'Bill Payment';
     if (keywordRules.transfer.some(k => text.includes(k))) return credit > 0 ? 'Transfer In' : 'Transfer Out';
     return credit > 0 ? 'Other Inflow' : 'Other Outflow';
+  }
+
+  function normalizeCounterparty(desc) {
+    return String(desc || '').toLowerCase()
+      .replace(/\d+/g, '')
+      .replace(/[^\p{L}\s]/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 40);
   }
 
   function normalizeTransactions() {
@@ -152,6 +224,10 @@
     };
     if (!mapping.date || !mapping.description || !mapping.debit || !mapping.credit) {
       throw new Error('ກະລຸນາເລືອກ Date, Description, Debit ແລະ Credit column ໃຫ້ຄົບ');
+    }
+    const selectedCore = [mapping.date, mapping.description, mapping.debit, mapping.credit].filter(Boolean);
+    if (new Set(selectedCore).size < selectedCore.length) {
+      throw new Error('Column mapping ຍັງຜິດ: Date/Description/Debit/Credit ບໍ່ຄວນເປັນ column ດຽວກັນ. ກະລຸນາເລືອກ Header Row ໃຫ້ຖືກກ່ອນ.');
     }
 
     return rawRows.map(row => {
@@ -185,11 +261,7 @@
     const loanPayments = transactions.filter(t => t.category === 'Loan/Installment Payment');
 
     const monthlyInflow = {};
-    const monthlyOutflow = {};
-    transactions.forEach(t => {
-      monthlyInflow[t.month] = (monthlyInflow[t.month] || 0) + t.credit;
-      monthlyOutflow[t.month] = (monthlyOutflow[t.month] || 0) + t.debit;
-    });
+    transactions.forEach(t => { monthlyInflow[t.month] = (monthlyInflow[t.month] || 0) + t.credit; });
     const inflows = Object.values(monthlyInflow).filter(v => v > 0);
     const maxInflow = inflows.length ? Math.max(...inflows) : 0;
     const minInflow = inflows.length ? Math.min(...inflows) : 0;
@@ -249,35 +321,7 @@
     if (!flags.length) flags.push('ບໍ່ພົບ red flag ສຳຄັນຈາກ rule ເບື້ອງຕົ້ນ');
     if (!questions.length) questions.push('ກວດຢືນຢັນລາຍຮັບ ແລະພາລະໜີ້ຕາມເອກະສານປົກກະຕິ');
 
-    return {
-      transactionCount: transactions.length,
-      months,
-      totalCredit,
-      totalDebit,
-      avgMonthlyInflow,
-      avgMonthlyOutflow,
-      netCashFlow,
-      cashWithdrawalTotal,
-      cashWithdrawalRatio,
-      largeDeposits,
-      loanPayments,
-      repeatedTransfers,
-      incomeVariation,
-      behaviorScore: score,
-      riskLevel,
-      flags,
-      questions,
-      transactions
-    };
-  }
-
-  function normalizeCounterparty(desc) {
-    return String(desc || '').toLowerCase()
-      .replace(/\d+/g, '')
-      .replace(/[^\p{L}\s]/gu, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 40);
+    return { transactionCount: transactions.length, months, totalCredit, totalDebit, avgMonthlyInflow, avgMonthlyOutflow, netCashFlow, cashWithdrawalTotal, cashWithdrawalRatio, largeDeposits, loanPayments, repeatedTransfers, incomeVariation, behaviorScore: score, riskLevel, flags, questions, transactions };
   }
 
   function renderSummary(summary) {
@@ -371,14 +415,21 @@ ${summary.questions.map(q => '- ' + q).join('\n')}
         throw new Error('ຮອງຮັບສະເພາະ CSV, XLSX, XLS');
       }
 
-      rawRows = rowsToObjects(rows);
-      if (!rawRows.length || !headers.length) throw new Error('ບໍ່ພົບຂໍ້ມູນ transaction ໃນ file');
-      setupMapping();
-      renderPreview();
+      sourceRows = rows.filter(r => (r || []).some(x => String(x ?? '').trim() !== ''));
+      if (!sourceRows.length) throw new Error('ບໍ່ພົບຂໍ້ມູນໃນ file');
+
+      const headerIndex = detectHeaderRow(sourceRows);
+      fillHeaderRowSelect(sourceRows, headerIndex);
+      applyHeaderRow(headerIndex);
+
       $('mappingPanel')?.classList.remove('hidden');
       $('previewPanel')?.classList.remove('hidden');
       $('statementResultPanel')?.classList.add('hidden');
-      setMessage(`ອ່ານ file ສຳເລັດ: ${rawRows.length} ແຖວ. ກະລຸນາກວດ column mapping ແລ້ວກົດ Analyze.`, 'success');
+
+      const msg = headerIndex === 0
+        ? `ອ່ານ file ສຳເລັດ: ${rawRows.length} ແຖວ. ກະລຸນາກວດ Header Row / Column Mapping ແລ້ວກົດ Analyze.`
+        : `ອ່ານ file ສຳເລັດ. ລະບົບເດົາ Header Row ເປັນ Row ${headerIndex + 1}. ກະລຸນາກວດກ່ອນ Analyze.`;
+      setMessage(msg, 'success');
     } catch (err) {
       setMessage(err.message || 'ອ່ານ file ບໍ່ສຳເລັດ', 'error');
     }
@@ -386,6 +437,7 @@ ${summary.questions.map(q => '- ' + q).join('\n')}
 
   function clearStatement() {
     rawRows = [];
+    sourceRows = [];
     headers = [];
     lastSummary = null;
     if ($('statementFile')) $('statementFile').value = '';
@@ -395,12 +447,24 @@ ${summary.questions.map(q => '- ' + q).join('\n')}
     setMessage('', '');
   }
 
+  $('headerRowSelect')?.addEventListener('change', (e) => updateHeaderHelp(e.target.value));
+
+  $('applyHeaderRowBtn')?.addEventListener('click', () => {
+    try {
+      applyHeaderRow($('headerRowSelect')?.value || 0);
+      $('statementResultPanel')?.classList.add('hidden');
+      setMessage('Apply Header Row ສຳເລັດ. ກວດ column mapping ແລ້ວກົດ Analyze.', 'success');
+    } catch (err) {
+      setMessage(err.message || 'Apply Header Row ບໍ່ສຳເລັດ', 'error');
+    }
+  });
+
   $('statementFile')?.addEventListener('change', (e) => handleFile(e.target.files[0]));
 
   $('analyzeStatementBtn')?.addEventListener('click', () => {
     try {
       const transactions = normalizeTransactions();
-      if (!transactions.length) throw new Error('ບໍ່ພົບ transaction ຫຼັງຈາກ mapping. ກະລຸນາກວດ column ອີກຄັ້ງ.');
+      if (!transactions.length) throw new Error('ບໍ່ພົບ transaction ຫຼັງຈາກ mapping. ກະລຸນາກວດ Header Row ແລະ column ອີກຄັ້ງ.');
       lastSummary = analyzeTransactions(transactions);
       renderSummary(lastSummary);
       $('statementResultPanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });

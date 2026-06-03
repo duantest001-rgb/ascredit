@@ -290,3 +290,34 @@ tr:hover td { background: #f8fffd; }
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Statement Analysis V1.1 */
+.header-row-box {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fbfffe;
+  margin-bottom: 10px;
+}
+.header-row-box label {
+  font-weight: 800;
+  color: var(--text);
+}
+.header-row-box select {
+  min-width: 0;
+}
+.small-note {
+  font-size: 13px;
+  margin-top: 4px;
+  margin-bottom: 14px;
+}
+@media (max-width: 760px) {
+  .header-row-box {
+    grid-template-columns: 1fr;
+  }
+}

@@ -46,3 +46,10 @@ Note:
 - PDF direct extraction is not included in V1.
 - For PDF statement 40-50 pages, convert/export to Excel/CSV first.
 - PDF extractor can be added in V2 after the summary engine is stable.
+
+
+## Statement Analysis V1.1
+Improved:
+- Added Header Row selector for files converted from PDF.
+- Prevented wrong mapping where Date/Debit/Credit all point to the same metadata column.
+- Removed PDF from V1 file picker to reduce confusion. PDF direct extraction will be V2.
