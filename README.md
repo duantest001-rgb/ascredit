@@ -53,3 +53,13 @@ Improved:
 - Added Header Row selector for files converted from PDF.
 - Prevented wrong mapping where Date/Debit/Credit all point to the same metadata column.
 - Removed PDF from V1 file picker to reduce confusion. PDF direct extraction will be V2.
+
+
+## Statement Smart Import V2
+Changed the UX from manual mapping to smart import:
+- User uploads Excel/CSV only.
+- System automatically checks whether it is a clean transaction table or PDF-converted Excel.
+- System attempts auto-cleaning for PDF-converted Excel.
+- Shows import type, transaction count, confidence score, and recommendation.
+- Main flow is Upload -> Auto Clean -> Analyze.
+- Manual header/column mapping remains available only under Advanced Mapping.

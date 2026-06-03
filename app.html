@@ -171,39 +171,53 @@
     </section>
 
 
-    <section id="statementView" class="view">
+    
+<section id="statementView" class="view">
       <div class="statement-layout">
         <section class="panel">
           <div class="section-head">
             <div>
-              <h3>Statement Analysis</h3>
-              <p>Upload Excel/CSV statement → map column → ລະບົບສະຫຼຸບ transaction ແລະກວດພຶດຕິກຳການເງິນ.</p>
+              <h3>Statement Smart Import V2</h3>
+              <p>Upload statement file ແລ້ວລະບົບຈະກວດ, clean, ແລະສະຫຼຸບ transaction ໃຫ້ອັດຕະໂນມັດ.</p>
             </div>
           </div>
 
           <div class="notice-box">
-            <strong>V1 ແນະນຳ:</strong>
-            <span>ໃຊ້ Excel/CSV ກ່ອນ. PDF 40–50 ໜ້າຈະເຮັດເປັນ V2 ຫຼັງຈາກ engine ວິເຄາະ transaction ນິ່ງແລ້ວ.</span>
+            <strong>ແນວທາງໃໝ່:</strong>
+            <span>ຜູ້ໃຊ້ຄວນເຮັດແຄ່ Upload → ກວດຜົນສະຫຼຸບ. Column Mapping ຈະຢູ່ໃນ Advanced ເທົ່ານັ້ນ.</span>
           </div>
 
           <div class="form-section">
             <h4>1. Upload Statement File</h4>
             <div class="upload-box">
               <input id="statementFile" type="file" accept=".csv,.xlsx,.xls" />
-              <p class="muted">ຮອງຮັບ Excel/CSV ໃນ V1. ຖ້າແປງຈາກ PDF ແລ້ວມີຂໍ້ມູນຫົວເອກະສານຢູ່ດ້ານເທິງ ໃຫ້ເລືອກ Header Row ທີ່ເປັນຕາຕະລາງ transaction.</p>
+              <p class="muted">ຮອງຮັບ Excel/CSV. ຖ້າແປງຈາກ PDF ເປັນ Excel ແລ້ວລະບົບຈະພະຍາຍາມ clean ໃຫ້ກ່ອນ.</p>
             </div>
             <p id="statementMessage" class="message"></p>
           </div>
 
-          <div id="mappingPanel" class="form-section hidden">
-            <h4>2. Header Row + Column Mapping</h4>
-            <p class="muted">ຖ້າ file ມີຫົວເອກະສານຢູ່ດ້ານເທິງ ໃຫ້ເລືອກແຖວທີ່ເປັນ header ຂອງ transaction ກ່ອນ.</p>
+          <div id="importStatusPanel" class="form-section hidden">
+            <h4>2. Import Check</h4>
+            <div id="importStatusCard" class="import-status-card"></div>
+            <div class="actions">
+              <button id="analyzeStatementBtn" type="button" class="primary-btn">Analyze Statement</button>
+              <button id="reviewDataBtn" type="button" class="secondary-btn">Review Data</button>
+              <button id="toggleAdvancedBtn" type="button" class="secondary-btn">Advanced Mapping</button>
+              <button id="clearStatementBtn" type="button" class="ghost-btn">Clear</button>
+            </div>
+          </div>
+
+          <div id="advancedPanel" class="form-section hidden">
+            <h4>Advanced Mapping</h4>
+            <p class="muted">ໃຊ້ສະເພາະກໍລະນີ auto clean ຜິດ. ຖ້າລະບົບອ່ານໄດ້ດີ ບໍ່ຕ້ອງແຕະສ່ວນນີ້.</p>
+
             <div class="header-row-box">
               <label>Header row</label>
               <select id="headerRowSelect"></select>
               <button id="applyHeaderRowBtn" type="button" class="secondary-btn">Apply Header Row</button>
             </div>
             <p id="headerHelpText" class="muted small-note"></p>
+
             <div class="form-grid">
               <div><label>Date column</label><select id="mapDate"></select></div>
               <div><label>Description column</label><select id="mapDescription"></select></div>
@@ -212,13 +226,13 @@
               <div><label>Balance</label><select id="mapBalance"></select></div>
             </div>
             <div class="actions">
-              <button id="analyzeStatementBtn" type="button" class="primary-btn">Analyze Statement</button>
-              <button id="clearStatementBtn" type="button" class="secondary-btn">Clear</button>
+              <button id="applyManualMappingBtn" type="button" class="primary-btn">Apply Manual Mapping</button>
             </div>
           </div>
 
           <div id="previewPanel" class="form-section hidden">
-            <h4>Preview Data</h4>
+            <h4>Cleaned Transactions Preview</h4>
+            <p class="muted">ຕົວຢ່າງ transaction ທີ່ລະບົບ clean ໄດ້. ຖ້າ confidence ຕ່ຳ ຄວນກວດກ່ອນ analyze.</p>
             <div class="table-wrap statement-preview">
               <table id="statementPreviewTable"></table>
             </div>
@@ -226,11 +240,12 @@
         </section>
 
         <aside class="panel soft-panel">
-          <h3>ແນວຄິດການກວດ</h3>
+          <h3>Smart Import Logic</h3>
           <ol class="simple-list">
-            <li>Code ຄິດໄລ່ຕົວເລກ</li>
-            <li>Rule ກວດ Red Flags</li>
-            <li>GPT ອະທິບາຍ Credit Memo</li>
+            <li>ກວດວ່າ file ເປັນ clean table ຫຼື PDF-converted Excel</li>
+            <li>ຖ້າ clean table → analyze ໄດ້ເລີຍ</li>
+            <li>ຖ້າ PDF-converted → auto cleaner ດຶງ transaction</li>
+            <li>ຖ້າ confidence ຕ່ຳ → ໃຫ້ review ກ່ອນ</li>
           </ol>
         </aside>
       </div>
@@ -239,7 +254,7 @@
         <div class="section-head">
           <div>
             <h3>Statement Summary</h3>
-            <p>ຜົນສະຫຼຸບຈາກ transaction ທີ່ upload.</p>
+            <p>ຜົນສະຫຼຸບຈາກ transaction ທີ່ລະບົບ clean/analyze.</p>
           </div>
           <button id="copyStatementPromptBtn" type="button" class="primary-btn">Copy Statement Prompt</button>
         </div>
