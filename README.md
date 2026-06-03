@@ -123,3 +123,12 @@ If the Worker URL changes, update:
 - Frontend now shows clearer Worker/Gemini errors instead of raw JSON parser messages.
 - Keep `GEMINI_API_KEY` as Cloudflare Worker Secret.
 - Optional Worker variable: `GEMINI_MODEL=gemini-2.5-flash`.
+
+## V3.4 Update
+- Added selected file info box.
+- Added PDF-only validation before upload.
+- Added file size validation before upload.
+- Added loading status panel.
+- Added Cancel button using AbortController.
+- Added Remove File button.
+- Buttons are disabled/enabled correctly during upload/AI reading.

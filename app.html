@@ -179,8 +179,21 @@
           <div class="notice-box"><strong>ຫຼັກການ:</strong><span>AI reads. Code verifies. User confirms. Human decides. ລະບົບບໍ່ອະນຸມັດແທນຄົນ.</span></div>
           <div class="form-section">
             <h4>1. Upload PDF Statement</h4>
-            <div class="upload-box"><input id="pdfStatementFile" type="file" accept=".pdf,application/pdf" /><p class="muted">ລະບົບຈະສົ່ງ PDF ໄປຫາ Cloudflare Worker ທີ່ຕັ້ງໄວ້ໃນ code. User ບໍ່ຕ້ອງກອກ URL ໃດໆ.</p></div>
-            <div class="actions"><button id="readPdfBtn" type="button" class="primary-btn">AI Read PDF Summary</button><button id="clearPdfSummaryBtn" type="button" class="ghost-btn">Clear</button></div>
+            <div class="upload-box pdf-upload-box">
+              <input id="pdfStatementFile" type="file" accept=".pdf,application/pdf" />
+              <div id="selectedPdfInfo" class="selected-file-box hidden"></div>
+              <p class="muted">ຮອງຮັບສະເພາະ PDF. ຖ້າເລືອກ file ຜິດ ໃຫ້ກົດ Remove File ຫຼື Clear.</p>
+            </div>
+            <div id="loadingPanel" class="loading-panel hidden">
+              <div class="spinner"></div>
+              <div><strong id="loadingTitle">ກຳລັງປະມວນຜົນ...</strong><p id="loadingDetail">ກະລຸນາລໍຖ້າ</p></div>
+            </div>
+            <div class="actions">
+              <button id="readPdfBtn" type="button" class="primary-btn" disabled>AI Read PDF Summary</button>
+              <button id="cancelPdfReadBtn" type="button" class="secondary-btn hidden">Cancel</button>
+              <button id="removePdfFileBtn" type="button" class="secondary-btn" disabled>Remove File</button>
+              <button id="clearPdfSummaryBtn" type="button" class="ghost-btn">Clear</button>
+            </div>
             <p id="pdfSummaryMessage" class="message"></p>
           </div>
           <div id="pdfStatusPanel" class="form-section hidden"><h4>2. AI Reading Status</h4><div id="pdfStatusCard" class="import-status-card"></div></div>

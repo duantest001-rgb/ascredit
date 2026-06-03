@@ -1,8 +1,11 @@
 (function () {
   const $ = (id) => document.getElementById(id);
   const PDF_WORKER_URL = (window.APP_CONFIG && window.APP_CONFIG.PDF_WORKER_URL) || window.PDF_WORKER_URL || 'https://ascredits.gogogo-thong.workers.dev/';
+  const MAX_FILE_MB = 18;
   let currentResult = null;
   let validation = null;
+  let abortController = null;
+  let isReading = false;
 
   function msg(id, text, type = '') {
     const el = $(id); if (!el) return;
@@ -12,6 +15,49 @@
   function esc(v) { return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
   function n(v) { const x = Number(v); return Number.isFinite(x) ? x : null; }
   function money(v) { const x = n(v); return x === null ? '-' : x.toLocaleString('en-US', { maximumFractionDigits: 2 }) + ' LAK'; }
+  function bytes(v) { const mb = v / 1024 / 1024; return mb >= 1 ? mb.toFixed(2) + ' MB' : (v / 1024).toFixed(1) + ' KB'; }
+  function getFile() { return $('pdfStatementFile')?.files?.[0] || null; }
+
+  function validateFile(file) {
+    if (!file) return { ok: false, message: 'ກະລຸນາເລືອກ PDF statement' };
+    const isPdf = file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf';
+    if (!isPdf) return { ok: false, message: 'File ບໍ່ຖືກ: ຮອງຮັບສະເພາະ PDF ເທົ່ານັ້ນ' };
+    if (file.size <= 0) return { ok: false, message: 'File ວ່າງ ຫຼື ອ່ານບໍ່ໄດ້' };
+    if (file.size > MAX_FILE_MB * 1024 * 1024) return { ok: false, message: `File ໃຫຍ່ເກີນ ${MAX_FILE_MB} MB. ກະລຸນາຫຼຸດຂະໜາດ ຫຼື ແບ່ງ file.` };
+    return { ok: true };
+  }
+
+  function updateFileUI() {
+    const file = getFile();
+    const box = $('selectedPdfInfo');
+    const readBtn = $('readPdfBtn');
+    const removeBtn = $('removePdfFileBtn');
+    if (!file) {
+      if (box) { box.classList.add('hidden'); box.innerHTML = ''; }
+      if (readBtn) readBtn.disabled = true;
+      if (removeBtn) removeBtn.disabled = true;
+      return;
+    }
+    const v = validateFile(file);
+    if (box) {
+      box.className = 'selected-file-box ' + (v.ok ? 'ok' : 'bad');
+      box.innerHTML = `<div><strong>${esc(file.name)}</strong><span>${esc(bytes(file.size))}</span></div><small>${v.ok ? 'PDF ພ້ອມອ່ານ' : esc(v.message)}</small>`;
+    }
+    if (readBtn) readBtn.disabled = !v.ok || isReading;
+    if (removeBtn) removeBtn.disabled = isReading;
+    msg('pdfSummaryMessage', v.ok ? '' : v.message, v.ok ? '' : 'error');
+  }
+
+  function setLoading(active, title = '', detail = '') {
+    isReading = active;
+    $('loadingPanel')?.classList.toggle('hidden', !active);
+    if ($('loadingTitle')) $('loadingTitle').textContent = title || 'ກຳລັງປະມວນຜົນ...';
+    if ($('loadingDetail')) $('loadingDetail').textContent = detail || 'ກະລຸນາລໍຖ້າ';
+    if ($('readPdfBtn')) $('readPdfBtn').disabled = active || !getFile();
+    $('cancelPdfReadBtn')?.classList.toggle('hidden', !active);
+    if ($('removePdfFileBtn')) $('removePdfFileBtn').disabled = active || !getFile();
+    if ($('pdfStatementFile')) $('pdfStatementFile').disabled = active;
+  }
 
   function validate(r) {
     const s = r?.summary_values || {};
@@ -65,26 +111,38 @@
   function buildPrompt(r, v) {
     return `ເຈົ້າແມ່ນ Credit Analysis Assistant. ກະລຸນາຂຽນບົດວິເຄາະ statement ເປັນພາສາລາວແບບມືອາຊີບ. ຫ້າມຕັດສິນອະນຸມັດ ຫຼື ປະຕິເສດແທນຄົນ.\n\nIMPORTANT:\n- AI PDF Summary Reader ສະຫຼຸບ key values ເທົ່ານັ້ນ.\n- Code ໄດ້ກວດ opening + deposits - withdrawals = closing.\n- User ໄດ້ confirm ຍອດຫຼັກແລ້ວ.\n\nStatement Info:\n${JSON.stringify(r.statement_info || {}, null, 2)}\n\nSummary Values:\n${JSON.stringify(r.summary_values || {}, null, 2)}\n\nSystem Validation:\n${JSON.stringify(v || {}, null, 2)}\n\nBehavior Summary:\n${JSON.stringify(r.behavior_summary || {}, null, 2)}\n\nRisk Flags:\n${(r.risk_flags || []).map(x=>'- '+x).join('\n') || '- ບໍ່ພົບ'}\n\nQuestions to Ask Customer:\n${(r.questions_to_ask_customer || []).map(x=>'- '+x).join('\n') || '- ກວດຢືນຢັນຍອດຫຼັກ'}\n\nຂໍໃຫ້ຂຽນ:\n1. ພາບລວມ statement\n2. ກະແສເງິນເຂົ້າ/ອອກ\n3. ຄວາມສະຖຽນຂອງລາຍຮັບ\n4. ພຶດຕິກຳການໃຊ້ບັນຊີ\n5. ຈຸດແຂງ\n6. ຈຸດສ່ຽງ\n7. ຄຳຖາມ/ເອກະສານຄວນຂໍເພີ່ມ\n8. ຂໍ້ຄວນກວດກ່ອນສົ່ງພິຈາລະນາ`;
   }
+
   async function readPdf(){
-    const file=$('pdfStatementFile')?.files?.[0], url=PDF_WORKER_URL;
-    if(!file) return msg('pdfSummaryMessage','ກະລຸນາເລືອກ PDF','error');
+    const file = getFile();
+    const v = validateFile(file);
+    if(!v.ok) { msg('pdfSummaryMessage', v.message, 'error'); updateFileUI(); return; }
     try{
-      $('readPdfBtn').disabled=true; msg('pdfSummaryMessage','AI ກຳລັງອ່ານ PDF... 30–90 ວິນາທີ','warning');
+      abortController = new AbortController();
+      setLoading(true, 'ກຳລັງ upload PDF...', 'ກຳລັງສົ່ງ file ໄປ Cloudflare Worker');
+      msg('pdfSummaryMessage','ກຳລັງ upload PDF...','warning');
+      $('pdfResultPanel')?.classList.add('hidden'); $('statementResultPanel')?.classList.add('hidden');
       const fd=new FormData(); fd.append('file',file); fd.append('mode','summary-only');
-      const res=await fetch(url,{method:'POST',body:fd});
-      const raw = await res.text();
-      let data;
-      try { data = JSON.parse(raw); }
-      catch (_) { throw new Error('Worker returned non-JSON response. Open Worker logs.'); }
+      setLoading(true, 'AI ກຳລັງອ່ານ PDF...', 'ອາດໃຊ້ເວລາ 30–90 ວິນາທີ. ກົດ Cancel ໄດ້ຖ້າຕ້ອງການຢຸດ.');
+      const res=await fetch(PDF_WORKER_URL,{method:'POST',body:fd, signal: abortController.signal});
+      const data=await res.json();
       if(!res.ok||!data.ok) throw new Error(data.error||data.message||'Worker/Gemini error');
       render(data.result); msg('pdfSummaryMessage','AI ອ່ານ PDF ແລ້ວ. ກວດຍອດຫຼັກກ່ອນ Generate Prompt.','success');
-    }catch(e){ msg('pdfSummaryMessage',e.message||'ອ່ານ PDF ບໍ່ສຳເລັດ','error'); }
-    finally{ if($('readPdfBtn')) $('readPdfBtn').disabled=false; }
+    }catch(e){
+      if(e.name === 'AbortError') msg('pdfSummaryMessage','ຍົກເລີກການອ່ານ PDF ແລ້ວ','warning');
+      else msg('pdfSummaryMessage',e.message||'ອ່ານ PDF ບໍ່ສຳເລັດ','error');
+    } finally { abortController=null; setLoading(false); updateFileUI(); }
   }
-  function clearAll(){ currentResult=null; validation=null; if($('pdfStatementFile')) $('pdfStatementFile').value=''; ['pdfStatusPanel','pdfResultPanel','statementResultPanel'].forEach(id=>$(id)?.classList.add('hidden')); if($('statementPrompt')) $('statementPrompt').value=''; msg('pdfSummaryMessage',''); }
+
+  function removeFile(){ if(isReading) return; if($('pdfStatementFile')) $('pdfStatementFile').value=''; currentResult=null; validation=null; updateFileUI(); msg('pdfSummaryMessage','ລຶບ file ທີ່ເລືອກແລ້ວ','warning'); }
+  function clearAll(){ if(abortController) abortController.abort(); currentResult=null; validation=null; if($('pdfStatementFile')) $('pdfStatementFile').value=''; ['pdfStatusPanel','pdfResultPanel','statementResultPanel'].forEach(id=>$(id)?.classList.add('hidden')); if($('statementPrompt')) $('statementPrompt').value=''; msg('pdfSummaryMessage',''); updateFileUI(); }
+
+  $('pdfStatementFile')?.addEventListener('change', updateFileUI);
   $('readPdfBtn')?.addEventListener('click', readPdf);
+  $('cancelPdfReadBtn')?.addEventListener('click', ()=> abortController && abortController.abort());
+  $('removePdfFileBtn')?.addEventListener('click', removeFile);
   $('clearPdfSummaryBtn')?.addEventListener('click', clearAll);
   $('confirmKeyTotals')?.addEventListener('change', e=>{ if($('generateMemoPromptBtn')) $('generateMemoPromptBtn').disabled=!e.target.checked; });
   $('generateMemoPromptBtn')?.addEventListener('click',()=>{ if(!currentResult||!validation) return; $('statementPrompt').value=buildPrompt(currentResult,validation); $('statementResultPanel')?.classList.remove('hidden'); $('statementResultPanel')?.scrollIntoView({behavior:'smooth'}); });
   $('copyStatementPromptBtn')?.addEventListener('click',async()=>{ const t=$('statementPrompt')?.value||''; if(t) { await navigator.clipboard.writeText(t); msg('statementCopyMessage','ຄັດລອກ Prompt ແລ້ວ','success'); }});
+  updateFileUI();
 })();
