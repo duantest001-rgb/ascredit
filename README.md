@@ -132,3 +132,47 @@ If the Worker URL changes, update:
 - Added Cancel button using AbortController.
 - Added Remove File button.
 - Buttons are disabled/enabled correctly during upload/AI reading.
+
+## Update: Statement Monthly Capture V4 (Practical PDF Workflow)
+
+This version adds a practical workflow for scanned PDF bank statements where full OCR/Excel conversion is unreliable.
+
+### Main idea
+PDF statement -> PDF preview -> manual monthly capture -> code calculation -> AI credit memo prompt.
+
+### New files / changed files
+- `js/statement-monthly-capture.js` — new monthly capture engine.
+- `app.html` — added Manual Monthly Capture section inside Statement Analysis.
+- `css/styles.css` — added styles for PDF preview, monthly capture table, and summary cards.
+
+### Added features
+- Upload PDF and preview it inside the Statement Analysis page.
+- Enter monthly totals manually from the PDF:
+  - Month
+  - Opening balance
+  - Total credit
+  - Total debit
+  - Closing balance
+  - Salary/payroll
+  - Cash withdrawal
+  - Loan-like payment
+  - Large deposit
+  - Remarks
+- Generate rows automatically from start month to end month.
+- Validate monthly balance using: opening + credit - debit = closing.
+- Calculate:
+  - Average monthly income
+  - Average monthly expense
+  - Average net cash flow
+  - Expense/income ratio
+  - Cash withdrawal ratio
+  - Salary/credit ratio
+  - Loan-like/credit ratio
+  - Statement score
+  - Red flags
+- Generate a Lao AI credit memo prompt.
+- Export monthly capture as CSV.
+- Save draft in browser localStorage.
+
+### Why this update
+Previous versions that relied on full PDF-to-Excel conversion had problems with scanned statements from BCEL, JDB, and LDB. This version avoids forcing full OCR accuracy and gives the credit officer a controlled review step before calculations.
